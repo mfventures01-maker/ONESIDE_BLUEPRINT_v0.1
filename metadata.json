@@ -1,0 +1,6 @@
+{
+  "name": "CARSS Enterprise Shell",
+  "description": "Enterprise-grade UI shell skeleton for the CARSS ecosystem with certified routes, layouts, role-based visibility, and state containers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

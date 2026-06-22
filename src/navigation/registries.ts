@@ -1,0 +1,343 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { RoleDefinition, AppRoute, NavigationGroup, RoleType } from "../types";
+
+export const RoleRegistry: RoleDefinition[] = [
+  {
+    id: "superadmin",
+    name: "Super Administrator",
+    description: "Full system authority and global configurations override.",
+  },
+  {
+    id: "ceo",
+    name: "Chief Executive Officer",
+    description: "Enterprise operational insight, financial transparency, and executive decisions.",
+  },
+  {
+    id: "manager",
+    name: "Branch/Session Manager",
+    description: "On-site management, transaction override, table mapping, and shift assignment.",
+  },
+  {
+    id: "staff",
+    name: "Frontline/General Staff",
+    description: "Standard action flow, order submission, table fulfillment, and shift activities.",
+  },
+];
+
+export const RouteRegistry: AppRoute[] = [
+  {
+    path: "/",
+    name: "Root Gateway",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Identity Territory",
+    category: "System Gateway",
+    constitutionalStatus: "Frozen - Authority Gate",
+    dataDependencies: ["carss_sessions", "permissions"],
+  },
+  {
+    path: "/dashboard",
+    name: "Analytics Dashboard",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Financial Territory",
+    category: "Operations",
+    constitutionalStatus: "Frozen - SSOT",
+    dataDependencies: ["transactions", "payment_intents"],
+  },
+  {
+    path: "/orders",
+    name: "Order Hub",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Order Territory",
+    category: "Operations",
+    constitutionalStatus: "Active - CARSS Authorized",
+    dataDependencies: ["orders", "order_items"],
+  },
+  {
+    path: "/orders/list",
+    name: "Order Ledger",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Order Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["orders"],
+  },
+  {
+    path: "/orders/detail",
+    name: "Order Inspection Room",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Order Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["orders", "order_items", "audit_logs"],
+  },
+  {
+    path: "/inventory",
+    name: "Inventory Command Center",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Inventory Territory",
+    category: "Operations",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["inventory_stock"],
+  },
+  {
+    path: "/inventory/items",
+    name: "Stock Registry",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Inventory Territory",
+    category: "Operations",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["inventory_stock"],
+  },
+  {
+    path: "/inventory/movements",
+    name: "Stock Ledger",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Inventory Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["inventory_stock", "audit_logs"],
+  },
+  {
+    path: "/products",
+    name: "Product Portfolio",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Menu Territory",
+    category: "Operations",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["menu_items"],
+  },
+  {
+    path: "/products/catalog",
+    name: "Product Catalog",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Menu Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["menu_items"],
+  },
+  {
+    path: "/products/categories",
+    name: "Menu Class Hierarchy",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Menu Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["menu_categories"],
+  },
+  {
+    path: "/media",
+    name: "Asset Vault",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Promotion Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["media_assets"],
+  },
+  {
+    path: "/media/bank",
+    name: "Graphic Repository",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Promotion Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["media_assets"],
+  },
+  {
+    path: "/media/uploads",
+    name: "Ingress Submissions",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Promotion Territory",
+    category: "Operations",
+    constitutionalStatus: "Active",
+    dataDependencies: ["media_assets"],
+  },
+  {
+    path: "/customers",
+    name: "Customer Registry List",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Identity Territory",
+    category: "People",
+    constitutionalStatus: "Active",
+    dataDependencies: ["user_profiles", "cards"],
+  },
+  {
+    path: "/staff",
+    name: "Crew Roster",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Identity Territory",
+    category: "People",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["staff_profiles", "business_memberships"],
+  },
+  {
+    path: "/roles",
+    name: "Authority Roles Matrix",
+    requiredRoles: ["superadmin", "ceo"],
+    territory: "Identity Territory",
+    category: "People",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["roles", "permissions"],
+  },
+  {
+    path: "/shifts",
+    name: "Shift Scheduler",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Financial Territory",
+    category: "Management",
+    constitutionalStatus: "Active",
+    dataDependencies: ["shifts", "transactions"],
+  },
+  {
+    path: "/tables",
+    name: "Floor Map Mapper",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "QR Territory",
+    category: "Hospitality",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["physical_tables", "qr_codes"],
+  },
+  {
+    path: "/reservations",
+    name: "Reservation Registrar",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Business Territory",
+    category: "Hospitality",
+    constitutionalStatus: "Active",
+    dataDependencies: ["reservations", "physical_tables"],
+  },
+  {
+    path: "/bookings",
+    name: "Booking Registrar",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Business Territory",
+    category: "Hospitality",
+    constitutionalStatus: "Active",
+    dataDependencies: ["bookings"],
+  },
+  {
+    path: "/properties",
+    name: "Property Ledger",
+    requiredRoles: ["superadmin", "ceo"],
+    territory: "Business Territory",
+    category: "Hospitality",
+    constitutionalStatus: "Active",
+    dataDependencies: ["businesses", "branches"],
+  },
+  {
+    path: "/reports",
+    name: "Reports Hub",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Audit Territory",
+    category: "Management",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["audit_logs", "transactions"],
+  },
+  {
+    path: "/analytics",
+    name: "Market Intelligence",
+    requiredRoles: ["superadmin", "ceo"],
+    territory: "Financial Territory",
+    category: "Management",
+    constitutionalStatus: "Active",
+    dataDependencies: ["transactions", "payment_intents"],
+  },
+  {
+    path: "/settings",
+    name: "Environment Config Overrides",
+    requiredRoles: ["superadmin", "ceo", "manager"],
+    territory: "Business Territory",
+    category: "Administration",
+    constitutionalStatus: "Frozen",
+    dataDependencies: ["businesses", "business_contact_channels"],
+  },
+  {
+    path: "/profile",
+    name: "Account settings",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Identity Territory",
+    category: "Administration",
+    constitutionalStatus: "Active",
+    dataDependencies: ["staff_profiles"],
+  },
+  {
+    path: "/notifications",
+    name: "System Dispatch Logs",
+    requiredRoles: ["superadmin", "ceo", "manager", "staff"],
+    territory: "Identity Territory",
+    category: "Administration",
+    constitutionalStatus: "Active",
+    dataDependencies: ["audit_logs"],
+  },
+  {
+    path: "/onboarding",
+    name: "Workspace Bootstrap Gateway",
+    requiredRoles: ["superadmin", "ceo"],
+    territory: "Identity Territory",
+    category: "System Gateway",
+    constitutionalStatus: "Active",
+    dataDependencies: ["businesses", "staff_profiles"],
+  },
+];
+
+// Helper to filter routes allowed for a set of roles
+export function getRoutesForRole(role: RoleType): AppRoute[] {
+  return RouteRegistry.filter((r) => r.requiredRoles.includes(role));
+}
+
+// Sidebar Groups fully derived from certified routes with appropriate icons
+export const SidebarRegistry: NavigationGroup[] = [
+  {
+    groupName: "Operations",
+    items: [
+      { name: "Dashboard", path: "/dashboard", icon: "LayoutDashboard", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Orders", path: "/orders", icon: "ShoppingCart", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Inventory", path: "/inventory", icon: "Package", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Products", path: "/products", icon: "Tag", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Media", path: "/media", icon: "Image", roles: ["superadmin", "ceo", "manager"] },
+    ],
+  },
+  {
+    groupName: "People",
+    items: [
+      { name: "Customers", path: "/customers", icon: "Users", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Staff", path: "/staff", icon: "UserCheck", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Roles", path: "/roles", icon: "Shield", roles: ["superadmin", "ceo"] },
+    ],
+  },
+  {
+    groupName: "Hospitality",
+    items: [
+      { name: "Tables", path: "/tables", icon: "Grid", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Reservations", path: "/reservations", icon: "CalendarCheck", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Bookings", path: "/bookings", icon: "Bookmark", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Properties", path: "/properties", icon: "Home", roles: ["superadmin", "ceo"] },
+    ],
+  },
+  {
+    groupName: "Management",
+    items: [
+      { name: "Shifts", path: "/shifts", icon: "Clock", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Reports", path: "/reports", icon: "FileText", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Analytics", path: "/analytics", icon: "BarChart3", roles: ["superadmin", "ceo"] },
+    ],
+  },
+  {
+    groupName: "Administration",
+    items: [
+      { name: "Settings", path: "/settings", icon: "Settings", roles: ["superadmin", "ceo", "manager"] },
+      { name: "Profile", path: "/profile", icon: "User", roles: ["superadmin", "ceo", "manager", "staff"] },
+      { name: "Notifications", path: "/notifications", icon: "Bell", roles: ["superadmin", "ceo", "manager", "staff"] },
+    ],
+  },
+];
+
+// Combine all configurations under a central Navigation Registry
+export const NavigationRegistry = {
+  roles: RoleRegistry,
+  routes: RouteRegistry,
+  sidebar: SidebarRegistry,
+};
