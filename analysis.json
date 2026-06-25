@@ -1,0 +1,851 @@
+[
+  {
+    "file": "src\\App.tsx",
+    "imports": [
+      "./state/Contexts",
+      "react",
+      "./routes",
+      "./state/auth/AuthProvider",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [],
+    "jsx": [
+      "AppRoutes",
+      "BrowserRouter",
+      "ShellStateProvider",
+      "AuthProvider"
+    ],
+    "supabase_calls": [],
+    "lines": 22
+  },
+  {
+    "file": "src\\main.tsx",
+    "imports": [
+      "react-dom/client",
+      "react",
+      "./App"
+    ],
+    "exports": [],
+    "hooks": [],
+    "jsx": [
+      "App",
+      "React"
+    ],
+    "supabase_calls": [],
+    "lines": 15
+  },
+  {
+    "file": "src\\types.ts",
+    "imports": [],
+    "exports": [
+      "RoleType",
+      "RoleConfig",
+      "RoleVisibilityMap",
+      "ThemeType",
+      "ThemeConfig",
+      "MenuCategory",
+      "MenuItem",
+      "InventoryItem",
+      "InventoryMovement",
+      "PricingRule",
+      "Promotion",
+      "Reservation",
+      "PaymentIntention",
+      "PaymentAudit",
+      "PaymentDispute",
+      "Shift",
+      "ShiftTransaction",
+      "ShiftSummary",
+      "CashMovement",
+      "POSTransaction",
+      "BankTransfer",
+      "OperationalInventoryMovement",
+      "AuditLog",
+      "EventCategoryType",
+      "AuditEvent"
+    ],
+    "hooks": [],
+    "jsx": [
+      "RoleType"
+    ],
+    "supabase_calls": [],
+    "lines": 286
+  },
+  {
+    "file": "src\\adapters\\BookingAdapter.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../types"
+    ],
+    "exports": [
+      "BookingRecord",
+      "BookingAdapter"
+    ],
+    "hooks": [],
+    "jsx": [
+      "Reservation"
+    ],
+    "supabase_calls": [],
+    "lines": 206
+  },
+  {
+    "file": "src\\adapters\\ShiftAdapter.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../types"
+    ],
+    "exports": [
+      "ConstitutionalShiftRecord",
+      "ShiftAdapter"
+    ],
+    "hooks": [],
+    "jsx": [
+      "Shift"
+    ],
+    "supabase_calls": [],
+    "lines": 283
+  },
+  {
+    "file": "src\\adapters\\TransactionAdapter.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../types"
+    ],
+    "exports": [
+      "ConstitutionalTransactionRecord",
+      "TransactionAdapter"
+    ],
+    "hooks": [],
+    "jsx": [
+      "POSTransaction"
+    ],
+    "supabase_calls": [
+      "supabase.from"
+    ],
+    "lines": 241
+  },
+  {
+    "file": "src\\audit\\auditLogger.ts",
+    "imports": [],
+    "exports": [
+      "computeSha256Fingerprint"
+    ],
+    "hooks": [],
+    "jsx": [],
+    "supabase_calls": [],
+    "lines": 15
+  },
+  {
+    "file": "src\\components\\DashboardLayout.tsx",
+    "imports": [
+      "../types",
+      "../state/Contexts",
+      "react",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useLocation",
+      "useNavigate"
+    ],
+    "jsx": [
+      "Cpu",
+      "Shield",
+      "LogOut",
+      "UserCog",
+      "ChevronRight",
+      "ChevronLeft"
+    ],
+    "supabase_calls": [],
+    "lines": 199
+  },
+  {
+    "file": "src\\guards\\AuthBoundary.tsx",
+    "imports": [
+      "react",
+      "lucide-react"
+    ],
+    "exports": [
+      "AuthBoundary"
+    ],
+    "hooks": [],
+    "jsx": [
+      "Props",
+      "ShieldAlert"
+    ],
+    "supabase_calls": [],
+    "lines": 69
+  },
+  {
+    "file": "src\\guards\\ProtectedRoute.tsx",
+    "imports": [
+      "lucide-react",
+      "react",
+      "../state/auth/useAuth",
+      "../types",
+      "../state/Contexts",
+      "react-router-dom"
+    ],
+    "exports": [
+      "ProtectedRoute"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useAuth"
+    ],
+    "jsx": [
+      "Navigate",
+      "ShieldAlert"
+    ],
+    "supabase_calls": [],
+    "lines": 57
+  },
+  {
+    "file": "src\\guards\\RoleGuard.tsx",
+    "imports": [
+      "../types",
+      "../state/Contexts",
+      "react"
+    ],
+    "exports": [
+      "RoleGuard"
+    ],
+    "hooks": [
+      "useRoleStore"
+    ],
+    "jsx": [],
+    "supabase_calls": [],
+    "lines": 24
+  },
+  {
+    "file": "src\\lib\\supabaseClient.ts",
+    "imports": [
+      "@supabase/supabase-js"
+    ],
+    "exports": [
+      "supabase",
+      "toUUID",
+      "isSupabaseConfigured"
+    ],
+    "hooks": [],
+    "jsx": [],
+    "supabase_calls": [
+      "supabase.co"
+    ],
+    "lines": 40
+  },
+  {
+    "file": "src\\pages\\AuditRoom.tsx",
+    "imports": [
+      "../types",
+      "../state/Contexts",
+      "react",
+      "../components/DashboardLayout"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useEffect",
+      "useState"
+    ],
+    "jsx": [
+      "DashboardLayout",
+      "Sliders",
+      "ShieldCheck",
+      "Key",
+      "Info",
+      "AnomalyLog",
+      "ResponsiveContainer",
+      "ShieldAlert",
+      "CheckCircle",
+      "AuditEvent",
+      "Cell",
+      "XAxis",
+      "Search",
+      "Users",
+      "EventCategoryType",
+      "PieChart",
+      "Pie",
+      "AnomalyIcon",
+      "TabType",
+      "TrendingUp",
+      "Bar",
+      "Terminal",
+      "Calendar",
+      "Layers",
+      "FileCode",
+      "YAxis",
+      "Database",
+      "Trash2",
+      "BarChart",
+      "Tooltip"
+    ],
+    "supabase_calls": [],
+    "lines": 1198
+  },
+  {
+    "file": "src\\pages\\CustomerHomepage.tsx",
+    "imports": [
+      "../services/revenueService",
+      "react",
+      "motion/react",
+      "../types",
+      "../state/Contexts",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useEffect",
+      "useState",
+      "useNavigate"
+    ],
+    "jsx": [
+      "Tv",
+      "Gift",
+      "Info",
+      "CheckCircle",
+      "Search",
+      "Copy",
+      "MenuItem",
+      "Users",
+      "ThemeType",
+      "MenuCategory",
+      "Shield",
+      "Phone",
+      "Settings",
+      "InventoryItem",
+      "Calendar",
+      "FolderLock",
+      "CreditCard",
+      "ShoppingBag",
+      "Sparkles",
+      "AnimatePresence",
+      "ChevronRight",
+      "Promotion"
+    ],
+    "supabase_calls": [],
+    "lines": 1002
+  },
+  {
+    "file": "src\\pages\\Dashboard.tsx",
+    "imports": [
+      "../services/revenueService",
+      "../components/DashboardLayout",
+      "react",
+      "motion/react",
+      "../services/operationService",
+      "../state/Contexts"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useEffect",
+      "useState"
+    ],
+    "jsx": [
+      "POSTransaction",
+      "OperationalInventoryMovement",
+      "DashboardLayout",
+      "Reservation",
+      "ResponsiveContainer",
+      "CartesianGrid",
+      "CheckCircle",
+      "Cell",
+      "XAxis",
+      "LineChart",
+      "MenuItem",
+      "PaymentIntention",
+      "Unlock",
+      "MenuCategory",
+      "PaymentDispute",
+      "AlertTriangle",
+      "BankTransfer",
+      "TrendingUp",
+      "CashMovement",
+      "Shift",
+      "Lock",
+      "Bar",
+      "Calendar",
+      "InventoryItem",
+      "Line",
+      "Terminal",
+      "History",
+      "Layers",
+      "RefreshCw",
+      "ArrowUpDown",
+      "Record",
+      "DollarSign",
+      "AlertCircle",
+      "Activity",
+      "YAxis",
+      "BarChart",
+      "Tooltip"
+    ],
+    "supabase_calls": [],
+    "lines": 1487
+  },
+  {
+    "file": "src\\pages\\Notifications.tsx",
+    "imports": [
+      "../state/Contexts",
+      "react",
+      "../components/DashboardLayout",
+      "lucide-react"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useState"
+    ],
+    "jsx": [
+      "AlertTriangle",
+      "DashboardLayout",
+      "ShieldCheck",
+      "SystemNotification",
+      "Bell",
+      "RefreshCw"
+    ],
+    "supabase_calls": [],
+    "lines": 162
+  },
+  {
+    "file": "src\\pages\\Onboarding.tsx",
+    "imports": [
+      "../state/Contexts",
+      "react",
+      "../components/DashboardLayout",
+      "lucide-react"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useRef",
+      "useState"
+    ],
+    "jsx": [
+      "DashboardLayout",
+      "FileText",
+      "OnboardedDocument",
+      "HTMLInputElement",
+      "AlertCircle",
+      "Upload",
+      "Trash2",
+      "CheckCircle2"
+    ],
+    "supabase_calls": [],
+    "lines": 194
+  },
+  {
+    "file": "src\\pages\\Profile.tsx",
+    "imports": [
+      "lucide-react",
+      "../components/DashboardLayout",
+      "react",
+      "../state/auth/useAuth",
+      "../state/Contexts"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useAuth"
+    ],
+    "jsx": [
+      "Shield",
+      "DashboardLayout",
+      "Fingerprint",
+      "Award"
+    ],
+    "supabase_calls": [],
+    "lines": 128
+  },
+  {
+    "file": "src\\pages\\PublicGatewayPage.tsx",
+    "imports": [
+      "lucide-react",
+      "react",
+      "motion/react",
+      "../state/auth/useAuth",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useNavigate",
+      "useAuth"
+    ],
+    "jsx": [
+      "CheckCircle",
+      "Cpu",
+      "Shield",
+      "Globe",
+      "Fingerprint",
+      "Lock"
+    ],
+    "supabase_calls": [],
+    "lines": 140
+  },
+  {
+    "file": "src\\pages\\Reports.tsx",
+    "imports": [
+      "../state/Contexts",
+      "react",
+      "motion/react"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useRoleStore",
+      "useEffect",
+      "useState"
+    ],
+    "jsx": [
+      "ShieldCheck",
+      "Printer",
+      "ReservationReportData",
+      "AuditReportData",
+      "User",
+      "Copy",
+      "Users",
+      "AlertOctagon",
+      "OperationsReport",
+      "SlidersHorizontal",
+      "Clock",
+      "FileSpreadsheet",
+      "TrendingUp",
+      "Coins",
+      "StaffPerformanceReportData",
+      "BarChart3",
+      "Download",
+      "Terminal",
+      "Share2",
+      "Check",
+      "RefreshCw",
+      "Building",
+      "Record",
+      "AnimatePresence",
+      "InventoryReportData",
+      "ReportTab",
+      "AlertCircle",
+      "ExecutiveRevenueReport"
+    ],
+    "supabase_calls": [],
+    "lines": 1408
+  },
+  {
+    "file": "src\\pages\\auth\\CEOLogin.tsx",
+    "imports": [
+      "lucide-react",
+      "react",
+      "motion/react",
+      "../../state/auth/useAuth",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useState",
+      "useNavigate",
+      "useAuth"
+    ],
+    "jsx": [
+      "ArrowLeft",
+      "ShieldCheck",
+      "ShieldAlert"
+    ],
+    "supabase_calls": [],
+    "lines": 154
+  },
+  {
+    "file": "src\\pages\\auth\\StaffLogin.tsx",
+    "imports": [
+      "lucide-react",
+      "react",
+      "motion/react",
+      "../../services/pinService",
+      "../../state/auth/useAuth",
+      "react-router-dom"
+    ],
+    "exports": [
+      "function"
+    ],
+    "hooks": [
+      "useState",
+      "useNavigate",
+      "useAuth"
+    ],
+    "jsx": [
+      "ArrowLeft",
+      "BookOpen",
+      "Fingerprint",
+      "ShieldAlert"
+    ],
+    "supabase_calls": [],
+    "lines": 145
+  },
+  {
+    "file": "src\\routes\\index.tsx",
+    "imports": [
+      "react",
+      "../guards/ProtectedRoute",
+      "../guards/AuthBoundary",
+      "react-router-dom"
+    ],
+    "exports": [
+      "AppRoutes"
+    ],
+    "hooks": [],
+    "jsx": [
+      "CEOLogin",
+      "Routes",
+      "ProtectedRoute",
+      "Onboarding",
+      "Suspense",
+      "PublicGatewayPage",
+      "AuthBoundary",
+      "Profile",
+      "Notifications",
+      "Dashboard",
+      "Reports",
+      "Route",
+      "AuditRoom",
+      "CustomerHomepage",
+      "RoutePreloader",
+      "Navigate",
+      "StaffLogin"
+    ],
+    "supabase_calls": [],
+    "lines": 107
+  },
+  {
+    "file": "src\\services\\auditService.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../types"
+    ],
+    "exports": [
+      "AnomalyLog",
+      "ConstitutionalAuditService"
+    ],
+    "hooks": [],
+    "jsx": [
+      "AnomalyLog",
+      "AuditEvent"
+    ],
+    "supabase_calls": [
+      "supabase.from"
+    ],
+    "lines": 412
+  },
+  {
+    "file": "src\\services\\operationService.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../adapters/TransactionAdapter",
+      "../adapters/ShiftAdapter",
+      "./auditService"
+    ],
+    "exports": [
+      "CARSS_Operations_Server"
+    ],
+    "hooks": [],
+    "jsx": [
+      "POSTransaction",
+      "BankTransfer",
+      "OperationalInventoryMovement",
+      "AuditLog",
+      "CashMovement",
+      "Shift",
+      "ShiftSummary"
+    ],
+    "supabase_calls": [
+      "supabase.from"
+    ],
+    "lines": 606
+  },
+  {
+    "file": "src\\services\\pinService.ts",
+    "imports": [
+      "../audit/auditLogger"
+    ],
+    "exports": [
+      "StaffProfile",
+      "verifyPin"
+    ],
+    "hooks": [],
+    "jsx": [],
+    "supabase_calls": [],
+    "lines": 44
+  },
+  {
+    "file": "src\\services\\reportService.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "./revenueService",
+      "./operationService",
+      "./auditService"
+    ],
+    "exports": [
+      "MetricLineage",
+      "ExecutiveRevenueReport",
+      "OperationsReport",
+      "AuditReportData",
+      "InventoryReportData",
+      "ReservationReportData",
+      "StaffPerformanceReportData",
+      "CARSS_Report_Service"
+    ],
+    "hooks": [],
+    "jsx": [
+      "POSTransaction",
+      "BankTransfer",
+      "CashMovement",
+      "StaffPerformanceReportData",
+      "InventoryReportData",
+      "OperationsReport",
+      "ExecutiveRevenueReport",
+      "ReservationReportData",
+      "AuditReportData",
+      "AuditEvent"
+    ],
+    "supabase_calls": [],
+    "lines": 784
+  },
+  {
+    "file": "src\\services\\revenueService.ts",
+    "imports": [
+      "../lib/supabaseClient",
+      "../adapters/BookingAdapter",
+      "./operationService",
+      "./auditService"
+    ],
+    "exports": [
+      "EXPERIMENTAL_THEMES",
+      "CARSS_Revenue_Server"
+    ],
+    "hooks": [],
+    "jsx": [
+      "MenuItem",
+      "PaymentIntention",
+      "ThemeType",
+      "InventoryItem",
+      "MenuCategory",
+      "PaymentDispute",
+      "Reservation",
+      "Promotion"
+    ],
+    "supabase_calls": [
+      "supabase.com"
+    ],
+    "lines": 1301
+  },
+  {
+    "file": "src\\state\\Contexts.tsx",
+    "imports": [
+      "../types",
+      "react",
+      "./auth/useAuth"
+    ],
+    "exports": [
+      "ShellStateContextType",
+      "ApplicationStore",
+      "ShellStateProvider",
+      "useRoleStore"
+    ],
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useRoleStore",
+      "useContext",
+      "useAuth"
+    ],
+    "jsx": [
+      "ApplicationStore",
+      "RoleType",
+      "ShellStateContextType"
+    ],
+    "supabase_calls": [],
+    "lines": 82
+  },
+  {
+    "file": "src\\state\\auth\\AuthContext.tsx",
+    "imports": [
+      "react",
+      "../../types"
+    ],
+    "exports": [
+      "UserSession",
+      "AuthContextType",
+      "AuthContext"
+    ],
+    "hooks": [],
+    "jsx": [
+      "AuthContextType"
+    ],
+    "supabase_calls": [],
+    "lines": 24
+  },
+  {
+    "file": "src\\state\\auth\\AuthProvider.tsx",
+    "imports": [
+      "../../lib/supabaseClient",
+      "./AuthContext",
+      "react",
+      "../../types"
+    ],
+    "exports": [
+      "determineRoleFromEmail",
+      "AuthProvider"
+    ],
+    "hooks": [
+      "useEffect",
+      "useState"
+    ],
+    "jsx": [
+      "AuthContext",
+      "UserSession"
+    ],
+    "supabase_calls": [
+      "supabase.auth"
+    ],
+    "lines": 132
+  },
+  {
+    "file": "src\\state\\auth\\useAuth.ts",
+    "imports": [
+      "./AuthContext",
+      "react"
+    ],
+    "exports": [
+      "useAuth"
+    ],
+    "hooks": [
+      "useContext",
+      "useAuth"
+    ],
+    "jsx": [],
+    "supabase_calls": [],
+    "lines": 15
+  }
+]

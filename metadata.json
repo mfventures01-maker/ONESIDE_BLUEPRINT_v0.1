@@ -1,0 +1,12 @@
+{
+  "name": "CARSS Platform Console",
+  "description": "Secure autonomous constitutional runtime and operational desk for enterprise compliance",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,39 @@
+# POS TRANSACTION USAGE REPORT
+## CARSS Wave 7.3 Legacy System Analysis
+
+**AUTHORITY**: CARSS Constitution, Wave 7 Runtime Alignment Program
+**DATE**: June 24, 2026
+**STATUS**: REVIEWED & IDENTIFIED
+
+---
+
+### 1. LEGACY TABLE READ/WRITE ACTIONS
+
+All legacy transaction workflows reside within `src/services/operationService.ts` and focus entirely on the `pos_transactions` table. The three core legacy operations are detailed below:
+
+#### A. Fetch Operations (`SELECT`)
+*   **Function Name**: `getPOSTransactions`
+*   **Operation Type**: `SELECT`
+*   **Fields Used**: `reference`, `amount`, `terminal_id`, `status`, `reconciled_at`
+*   **Business Purpose**: Retrieves full list of point-of-sale journal records, sorted chronologically, to populate active terminal registers and reconciliation views in the operator dashboard.
+
+#### B. Ingestion Operations (`INSERT`)
+*   **Function Name**: `addPOSTransaction`
+*   **Operation Type**: `INSERT`
+*   **Fields Used**: `reference` (primary key), `amount`, `terminal_id`, `status` (value: `'pending'`), `reconciled_at` (value: `null`)
+*   **Business Purpose**: Registers a pending payment terminal event (credit collection, POS terminal receipt) into the system's ledger before official audit matching.
+
+#### C. Reconciliation/Update Operations (`UPDATE`)
+*   **Function Name**: `reconcilePOSTransaction`
+*   **Operation Type**: `UPDATE`
+*   **Fields Used**: `status` (value: `'reconciled'`), `reconciled_at` (value: `new Date().toISOString()`), filtering by `reference`
+*   **Business Purpose**: Updates state flag of a specific POS receipt from `'pending'` to `'reconciled'`, establishing transaction closing integrity.
+
+---
+
+### 2. SUMMARY OF ACTIONS REQUIRED FOR REFACTOR
+
+To transfer authority completely:
+1.  Map `pos_transactions` `SELECT`, `INSERT`, and `UPDATE` calls to `TransactionAdapter` methods.
+2.  Maintain local cache compatibility using the standard `carss_pos` local storage namespace to avoid breaking offline workflows.
+3.  Implement safe fallbacks so pages still receive standard `POSTransaction` type declarations.

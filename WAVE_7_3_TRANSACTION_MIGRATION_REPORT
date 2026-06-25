@@ -1,0 +1,61 @@
+# WAVE 7.3 TRANSACTION MIGRATION REPORT
+## CARSS Runtime Authority Migration & Alignment
+
+**AUTHORITY**: CARSS Wave 7 Runtime Alignment Program
+**DATE**: June 24, 2026
+**STATUS**: COMPLETED, VERIFIED, & CERTIFIED
+
+---
+
+### 1. EXECUTIVE SUMMARY
+In accordance with the CARSS Wave 7 Runtime Alignment Program and the Wave 5 Schema Registry, runtime authority for point-of-sale journal records has been successfully transferred from the legacy `pos_transactions` table to the certified constitutional `transactions` table. All codebases are compiling successfully, and zero legacy tables are written to.
+
+---
+
+### 2. PHASES OF THE MIGRATION
+
+#### PHASE 1: SCHEMA VERIFICATION
+The active columns on the live `transactions` table were dynamically audited and verified:
+*   **Columns Present**: `id`, `amount`, `status`, `payment_intent_id`, `shift_id`, `staff_id` (representing the operator), `business_id`, `payment_method`, `created_at`.
+*   **Columns Absent**: `transaction_reference`, `operator_id`, `updated_at`.
+
+#### PHASE 2: LEGACY TRANSACTION ANALYSIS
+The usages of `pos_transactions` in `src/services/operationService.ts` were mapped:
+*   `getPOSTransactions`: `SELECT` statement mapping.
+*   `addPOSTransaction`: `INSERT` statement registering a new pending transaction.
+*   `reconcilePOSTransaction`: `UPDATE` matching transaction status to `'reconciled'`.
+
+#### PHASE 3: CONSTITUTIONAL MAPPING
+A robust mapping scheme was developed:
+*   `reference` -> `id`
+*   `amount` -> `amount`
+*   `status` -> `status`
+*   `terminal_id` -> `payment_intent_id` (or local cache)
+*   `operator_id` -> `staff_id` (constituted)
+*   `shift_id` -> `shift_id` (resolved dynamically from current active shift)
+*   *Injected parameters*: `business_id` (branch code), `payment_method` (`'pos'`), `created_at` (timestamp matching).
+
+#### PHASE 4: TRANSACTION ADAPTER IMPLEMENTATION
+Developed `src/adapters/TransactionAdapter.ts` following the proven constitutional adapter design. It maps schemas bi-directionally, provides database-backed operations when online, and defaults to local caching when offline.
+
+#### PHASE 5: OFFLINE AUTHORITY
+**Option B Selected**: Primary Offline Authority `carss_pos` was chosen. Rationale:
+1.  Ensures 100% backward compatibility with all frontend components.
+2.  Keeps local storage state aligned under `carss_pos` to prevent data-shape translation overhead on device.
+3.  Completely isolates UI logic from table schemas.
+
+#### PHASE 6: SERVICE REFACTOR
+*   Refactored `getPOSTransactions`, `addPOSTransaction`, and `reconcilePOSTransaction` in `src/services/operationService.ts` to delegate to `TransactionAdapter`.
+*   Updated forensic lineage tracing metadata in `src/services/reportService.ts` and dynamic view variables in `src/pages/Reports.tsx` to reference `transactions` instead of `pos_transactions`.
+
+#### PHASE 7 & 8: RUNTIME VERIFICATION AND BUILD VALIDATION
+*   Audited all remaining references.
+*   TypeScript checks (`tsc --noEmit`) compiled with 0 errors.
+*   Production build (`npm run build`) completed successfully with 0 warnings or errors.
+
+---
+
+### 3. COMPLIANCE STATUS
+*   **Legacy Writes**: **0** (All direct writes to `pos_transactions` have been severed).
+*   **Constitutional Writes**: **>0** (Writes successfully redirected to `transactions`).
+*   **Audit Trail**: Fully preserved. All ledger insertions and reconciliations emit events via `ConstitutionalAuditService` with exact contextual payloads.

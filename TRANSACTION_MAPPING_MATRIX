@@ -1,0 +1,23 @@
+# TRANSACTION MAPPING MATRIX
+## Legacy to Constitutional Column Mapping
+
+This document provides the canonical translation definitions mapping legacy fields from `pos_transactions` to verified active columns in the `transactions` table under the Wave 7.3 Adapter.
+
+| Legacy Field | Type | Constitutional Field | Type | Transformation & Mapping Logic |
+| :--- | :--- | :--- | :--- | :--- |
+| **`reference`** | `TEXT` | **`id`** | `TEXT` | Map 1:1. Acts as the primary key. |
+| **`amount`** | `NUMERIC` | **`amount`** | `NUMERIC` | Map 1:1. Float value representing ledger money size. |
+| **`status`** | `TEXT` | **`status`** | `TEXT` | Map 1:1. Standard values: `'pending'` or `'reconciled'`. |
+| **`reconciled_at`**| `TEXT/null` | **`created_at`** | `TIMESTAMPTZ` | Map to timestamp field. Defaults to `NOW()` on insert. |
+| **`terminal_id`** | `TEXT` | **`payment_intent_id`**| `TEXT` | Map to `payment_intent_id` or preserve local cache metadata. |
+| *(Injected)* | — | **`business_id`** | `TEXT` | Dynamically resolved from context (Fallback: `"biz-1"`). |
+| *(Injected)* | — | **`shift_id`** | `TEXT` | Dynamically resolved from active open shift (or `null`). |
+| *(Injected)* | — | **`staff_id`** | `TEXT` | Maps `operator_id` (or current active user ID). |
+| *(Injected)* | — | **`payment_method`** | `TEXT` | Defaults to `'pos'` representing terminal credit events. |
+
+---
+
+### NULL-SAFE RESOLUTION RULES
+*   **Missing Operator**: If `operator_id` is not passed or undefined, fall back to `'system'`.
+*   **Missing Shift**: If no active open shift is present at creation time, fall back to `null`.
+*   **Date Format**: ISO-8601 strings are mapped safely to `created_at` or stored in local compatibility caches.

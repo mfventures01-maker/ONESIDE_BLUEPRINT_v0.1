@@ -1,0 +1,35 @@
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 3000",
+    "build": "vite build",
+    "lint": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "clsx": "^2.1.1",
+    "d3": "^7.9.0",
+    "lucide-react": "^0.395.0",
+    "motion": "^11.11.17",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.23.1",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/vite": "^4.0.0-alpha.18",
+    "@types/d3": "*",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.11"
+  }
+}

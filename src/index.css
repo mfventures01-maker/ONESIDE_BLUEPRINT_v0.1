@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-zinc-850: #1f1f23;
+  --color-zinc-925: #0e0e11;
+  --color-zinc-950: #09090b;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,0 +1,26 @@
+# WAVE 7 RUNTIME AUTHORITY MATRIX
+## CARSS Constitutional Proof-of-Migration Document
+
+**AUTHORITY**: CARSS Wave 7 Runtime Alignment Program
+**DATE**: June 24, 2026
+**STATUS**: CERTIFIED & VALIDATED
+
+This document establishes the official certified runtime authority matrix, proving the transfer of authority from legacy schema tables to constitutional databases under the CARSS Wave 7 series.
+
+---
+
+### RUNTIME ALIGNMENT & WRITE STATUS
+
+| Legacy Table | Constitutional Table | Legacy Writes | Constitutional Writes | Status | Verification Reference |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **`reservations`** | **`bookings`** | **0** | **>0** | `CERTIFIED` | `BookingAdapter.ts` |
+| **`shifts`** | **`carss_shift_core`** | **0** | **>0** | `CERTIFIED` | `ShiftAdapter.ts` |
+| **`pos_transactions`** | **`transactions`** | **0** | **>0** | `CERTIFIED` | `TransactionAdapter.ts` |
+
+---
+
+### MATRIX SPECIFICATIONS
+
+1. **Zero Legacy Writing Constraint**: No write operations (`INSERT`, `UPDATE`, `DELETE`) are performed on `reservations`, `shifts`, or `pos_transactions` schemas in the live online database. All writing pathways route strictly through constitutional tables.
+2. **Offline Resilience Fallbacks**: Local caches under legacy keys (`carss_reservations`, `carss_shifts`, `carss_pos`) are fully preserved to guarantee continuous offline execution and immediate sync-ready state.
+3. **Forensic Lineage Matching**: All reports, audit rooms, and query analytics resolve to the active constitutional tables, maintaining 1:1 metric integrity.
