@@ -1,9 +1,9 @@
 # CONSTITUTIONAL BASELINE MANIFEST
 
 **Repository Name:** ONESIDE_BLUEPRINT_v0.1-main
-**Repository URL:** Pending Configuration
+**Repository URL:** https://github.com/mfventures01-maker/ONESIDE_BLUEPRINT_v0.1.git
 **Default Branch:** main
-**Commit Hash:** Pending Commit
+**Commit Hash:** d4ab19987cbe5d295e07b4e41b8e7e0eb9de5a53
 **Git Tag:** v1.0.0-crvs-foundation
 **Release Version:** v1.0.0
 **Release Timestamp:** 2026-06-25T08:38:00Z
