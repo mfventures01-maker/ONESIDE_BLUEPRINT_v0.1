@@ -23,7 +23,6 @@
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.0.0-alpha.18",
     "@types/d3": "*",
     "@types/react": "^18.3.3",

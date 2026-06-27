@@ -13,6 +13,7 @@ const CustomerHomepage = lazy(() => import("../pages/CustomerHomepage"));
 const PublicGatewayPage = lazy(() => import("../pages/PublicGatewayPage"));
 const CEOLogin = lazy(() => import("../pages/auth/CEOLogin"));
 const StaffLogin = lazy(() => import("../pages/auth/StaffLogin"));
+const Bootstrap = lazy(() => import("../pages/auth/Bootstrap"));
 const Onboarding = lazy(() => import("../pages/Onboarding"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
@@ -42,6 +43,7 @@ export function AppRoutes() {
           {/* Auth Channels */}
           <Route path="/auth/ceo" element={<CEOLogin />} />
           <Route path="/auth/staff" element={<StaffLogin />} />
+          <Route path="/bootstrap" element={<Bootstrap />} />
 
           {/* Protected Area */}
           <Route

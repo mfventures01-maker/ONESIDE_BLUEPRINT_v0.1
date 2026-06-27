@@ -4,38 +4,13 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { telemetryEngine } from "../telemetry/engine";
 
 // Fetching Supabase environment variables safely
 const metaEnv = (import.meta as any).env || {};
 const supabaseUrl = metaEnv.VITE_SUPABASE_URL || "https://placeholder-project-id.supabase.co";
 const supabaseAnonKey = metaEnv.VITE_SUPABASE_ANON_KEY || "placeholder-anon-key-abc123xyz";
 
-const rawSupabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export const supabase = new Proxy(rawSupabase, {
-  get(target, prop) {
-    if (prop === 'from') {
-      return (table: string) => {
-        const traceId = telemetryEngine.generateTraceID();
-        const start = performance.now();
-        const queryBuilder = target.from(table);
-        
-        telemetryEngine.emit('supabase', {
-          TraceID: traceId,
-          Table: table,
-          Operation: 'from',
-          ExecutionTime: performance.now() - start
-        });
-        
-        // We'd ideally proxy the query builder to catch select(), insert() etc.
-        // For simplicity we just emit the initial 'from' call.
-        return queryBuilder;
-      };
-    }
-    return (target as any)[prop];
-  }
-});
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export function toUUID(str: string): string {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
