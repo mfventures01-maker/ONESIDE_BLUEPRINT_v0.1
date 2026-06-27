@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -77,6 +78,133 @@ export default function Bootstrap() {
             </p>
           </div>
         </div>
+=======
+import React, { useState } from "react";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
+import { supabase } from "../../lib/supabaseClient";
+
+export default function Bootstrap() {
+  const [email, setEmail] = useState("mfventures01@gmail.com");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setResult(null);
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+      } else {
+        setResult({
+          message: "Root Authority Created Successfully",
+          user: data.user,
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected authentication error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl relative">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-indigo-900/50 text-indigo-400 rounded-xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold font-mono text-white tracking-tight">
+            Bootstrap Root Authority
+          </h2>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-lg text-red-400 font-mono text-[11px] flex gap-2 items-start mb-6">
+            <ShieldAlert className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {result && (
+          <div className="p-3 bg-green-950/20 border border-green-500/20 rounded-lg text-green-400 font-mono text-[11px] flex gap-2 items-start mb-6 overflow-hidden break-words">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-wider mb-1.5">
+              Constitutional Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 font-mono text-xs text-white"
+              disabled={loading}
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-wider mb-1.5">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 font-mono text-xs text-white"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-wider mb-1.5">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 font-mono text-xs text-white"
+              disabled={loading}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
+          >
+            {loading ? "Creating..." : "Create Constitutional Root Authority"}
+          </button>
+        </form>
+>>>>>>> e0c08ca (feat(auth): add constitutional bootstrap authentication flow)
       </div>
     </div>
   );
