@@ -3,7 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { supabase, isSupabaseConfigured, toUUID } from "../lib/supabaseClient";
+import { ShiftRepository } from "../repositories/ShiftRepository";
+import { TransactionRepository } from "../repositories/TransactionRepository";
+import { PaymentRepository } from "../repositories/PaymentRepository";
+import { AuditRepository } from "../repositories/AuditRepository";
+import { InventoryRepository } from "../repositories/InventoryRepository";
+import { toUUID } from "../lib/supabaseClient";
 import {
   Shift,
   ShiftTransaction,
@@ -15,8 +20,6 @@ import {
   AuditLog
 } from "../types";
 import { ConstitutionalAuditService } from "./auditService";
-import { ShiftAdapter } from "../adapters/ShiftAdapter";
-import { TransactionAdapter } from "../adapters/TransactionAdapter";
 
 // --- SEEDS FOR FALLBACK / DEVELOPMENT ---
 
@@ -66,55 +69,43 @@ const setStorage = <T>(key: string, data: T): void => {
 
 export const CARSS_Operations_Server = {
   isOnline: (): boolean => {
-    return isSupabaseConfigured();
+    return ShiftRepository.isOnline();
   },
 
   // --- GENERAL AUDIT LOG LOGGER ---
   async emitAudit(log: Omit<AuditLog, "id" | "timestamp">): Promise<void> {
-    const freshLog: AuditLog = {
-      ...log,
-      id: `audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      timestamp: new Date().toISOString()
-    };
-    const logs = getStorage<AuditLog[]>("carss_audit_logs", []);
-    logs.unshift(freshLog);
-    setStorage("carss_audit_logs", logs);
-
-    if (this.isOnline()) {
-      try {
-        await supabase.from("audit_logs").insert(freshLog);
-      } catch (err) {
-        console.warn("Supabase audit storage issue:", err);
-      }
-    }
+    await AuditRepository.recordAudit(log);
   },
 
   async getAuditLogs(): Promise<AuditLog[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("audit_logs")
-          .select("*")
-          .order("timestamp", { ascending: false });
-        if (data && !error) return data as AuditLog[];
-      } catch (err) {
-        console.warn("Supabase audit log query fallback");
-      }
-    }
-    return getStorage<AuditLog[]>("carss_audit_logs", []);
+    const res = await AuditRepository.getAuditLogs();
+    return res.success && res.data ? res.data : [];
   },
 
   // --- 1. SHIFT ENGINE ---
   async getShifts(): Promise<Shift[]> {
-    return ShiftAdapter.getShifts();
+    const res = await ShiftRepository.getShifts();
+    return res.success && res.data ? res.data : [];
   },
 
   async getActiveShift(): Promise<Shift | null> {
-    return ShiftAdapter.getActiveShift();
+    const res = await ShiftRepository.getActiveShift();
+    return res.success && res.data ? res.data : null;
   },
 
   async openShift(operatorId: string, role: string, openingFloat: number): Promise<Shift> {
-    const newShift = await ShiftAdapter.openShift(operatorId, role, openingFloat);
+    const res = await ShiftRepository.openShift(operatorId, role, openingFloat);
+    const newShift = res.success && res.data ? res.data : {
+      id: `SHIFT-REV-ACTIVE-${Date.now()}`,
+      operator_id: operatorId,
+      role: role,
+      opening_float: openingFloat,
+      closing_amount: null,
+      variance: null,
+      status: "open" as const,
+      opened_at: new Date().toISOString(),
+      closed_at: null
+    };
 
     await this.emitAudit({
       operator_id: operatorId,
@@ -144,7 +135,7 @@ export const CARSS_Operations_Server = {
 
   async closeShift(shiftId: string, closingAmount: number, operatorId: string, role: string): Promise<ShiftSummary> {
     const list = await this.getShifts();
-    let targetShift: Shift | undefined = undefined;
+    const targetShift = list.find((s) => s.id === shiftId);
 
     // Retrieve shift transactions / payment details to calculate totals for validation
     // Cash Payments, POS, Transfer total sums
@@ -165,13 +156,12 @@ export const CARSS_Operations_Server = {
       return acc;
     }, 0);
 
-    targetShift = list.find((s) => s.id === shiftId);
-    const shiftFloat = targetShift ? (targetShift as Shift).opening_float : 0;
+    const shiftFloat = targetShift ? targetShift.opening_float : 0;
     const expectedCash = shiftFloat + totalCash + sumCashMovements;
     const varianceComputed = closingAmount - expectedCash;
     const closedAt = new Date().toISOString();
 
-    await ShiftAdapter.closeShift(shiftId, closingAmount, varianceComputed, closedAt);
+    await ShiftRepository.closeShift(shiftId, closingAmount, varianceComputed, closedAt);
 
     await this.emitAudit({
       operator_id: operatorId,
@@ -210,14 +200,6 @@ export const CARSS_Operations_Server = {
     summariesList.unshift(summary);
     setStorage("carss_shift_summaries", summariesList);
 
-    if (this.isOnline()) {
-      try {
-        await supabase.from("shift_summaries").insert(summary);
-      } catch (err) {
-        console.warn("Supabase shift_summary logging skipped or pending");
-      }
-    }
-
     return summary;
   },
 
@@ -252,14 +234,6 @@ export const CARSS_Operations_Server = {
     currentList.unshift(newMovement);
     setStorage("carss_cash_movements", currentList);
 
-    if (this.isOnline()) {
-      try {
-        await supabase.from("cash_movements").insert(newMovement);
-      } catch (e) {
-        console.warn("Supabase cash_movements insert fallback");
-      }
-    }
-
     await this.emitAudit({
       operator_id: operatorId,
       role,
@@ -288,14 +262,22 @@ export const CARSS_Operations_Server = {
 
   // --- 3. POS RECONCILIATION ENGINE ---
   async getPOSTransactions(): Promise<POSTransaction[]> {
-    return TransactionAdapter.getTransactions();
+    const res = await TransactionRepository.getTransactions();
+    return res.success && res.data ? res.data : [];
   },
 
   async addPOSTransaction(reference: string, amount: number, terminalId: string, operatorId: string = "system", role: string = "staff"): Promise<POSTransaction> {
     const activeShift = await this.getActiveShift();
     const shiftId = activeShift ? activeShift.id : null;
     
-    const newTx = await TransactionAdapter.createTransaction(reference, amount, terminalId, operatorId, shiftId);
+    const res = await TransactionRepository.createTransaction(reference, amount, terminalId, operatorId, shiftId);
+    const newTx = res.success && res.data ? res.data : {
+      reference,
+      amount,
+      terminal_id: terminalId,
+      status: "pending" as const,
+      reconciled_at: null
+    };
 
     await ConstitutionalAuditService.emitEvent({
       event_type: "add_pos_transaction",
@@ -317,7 +299,7 @@ export const CARSS_Operations_Server = {
   },
 
   async reconcilePOSTransaction(reference: string, operatorId: string, role: string): Promise<void> {
-    await TransactionAdapter.reconcileTransaction(reference, operatorId, role);
+    await TransactionRepository.reconcileTransaction(reference, operatorId, role);
 
     await this.emitAudit({
       operator_id: operatorId,
@@ -345,26 +327,8 @@ export const CARSS_Operations_Server = {
 
   // --- 4. TRANSFER RECONCILIATION ENGINE ---
   async getBankTransfers(): Promise<BankTransfer[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("unmatched_payments")
-          .select("*")
-          .order("status", { ascending: true });
-        if (data && !error && data.length > 0) {
-          return data.map((row: any) => ({
-            reference: row.reference || "",
-            amount: Number(row.amount) || 0,
-            payer_name: row.sender || "Unknown",
-            verification_status: (row.status === "verified" ? "verified" : "pending") as any,
-            verified_by: null
-          })) as BankTransfer[];
-        }
-      } catch (err) {
-        console.warn("Supabase bank transfer fetch issue");
-      }
-    }
-    return getStorage<BankTransfer[]>("carss_transfers", INITIAL_TRANSFERS);
+    const res = await PaymentRepository.getBankTransfers();
+    return res.success && res.data ? res.data : [];
   },
 
   async addBankTransfer(reference: string, amount: number, payerName: string, operatorId: string = "system", role: string = "staff"): Promise<BankTransfer> {
@@ -375,24 +339,8 @@ export const CARSS_Operations_Server = {
       verification_status: "pending",
       verified_by: null
     };
-    const list = await this.getBankTransfers();
-    list.unshift(newTx);
-    setStorage("carss_transfers", list);
-
-    if (this.isOnline()) {
-      try {
-        await supabase.from("unmatched_payments").insert({
-          id: toUUID(`unmatched-${reference}`),
-          amount: amount,
-          reference: reference,
-          sender: payerName,
-          detected_at: new Date().toISOString(),
-          status: "pending"
-        });
-      } catch (err) {
-        console.warn("Supabase bank transfer insert issue", err);
-      }
-    }
+    
+    await PaymentRepository.addBankTransfer(newTx);
 
     await ConstitutionalAuditService.emitEvent({
       event_type: "add_bank_transfer",
@@ -414,29 +362,7 @@ export const CARSS_Operations_Server = {
   },
 
   async verifyBankTransfer(reference: string, operatorId: string, role: string): Promise<void> {
-    const list = await this.getBankTransfers();
-    const updated = list.map(t => {
-      if (t.reference === reference) {
-        return {
-          ...t,
-          verification_status: "verified" as const,
-          verified_by: operatorId
-        };
-      }
-      return t;
-    });
-    setStorage("carss_transfers", updated);
-
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("unmatched_payments")
-          .update({ status: "verified" })
-          .eq("reference", reference);
-      } catch (err) {
-        console.warn("Supabase bank transfer verify update issue", err);
-      }
-    }
+    await PaymentRepository.verifyBankTransfer(reference);
 
     await this.emitAudit({
       operator_id: operatorId,
@@ -464,7 +390,8 @@ export const CARSS_Operations_Server = {
 
   // --- 5. INVENTORY MOVEMENT ENGINE ---
   async getInventoryMovements(): Promise<OperationalInventoryMovement[]> {
-    return getStorage<OperationalInventoryMovement[]>("carss_op_inventory_movements", []);
+    const res = await InventoryRepository.getOperationalInventoryMovements();
+    return res.success && res.data ? res.data : [];
   },
 
   async addInventoryMovement(
@@ -485,17 +412,7 @@ export const CARSS_Operations_Server = {
       timestamp: new Date().toISOString()
     };
 
-    const list = await this.getInventoryMovements();
-    list.unshift(newMovement);
-    setStorage("carss_op_inventory_movements", list);
-
-    if (this.isOnline()) {
-      try {
-        await supabase.from("inventory_movements_v3").insert(newMovement);
-      } catch (err) {
-        console.warn("Supabase inventory movement log issue");
-      }
-    }
+    await InventoryRepository.addOperationalInventoryMovement(newMovement);
 
     await this.emitAudit({
       operator_id: operatorId,

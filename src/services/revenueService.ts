@@ -3,10 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { supabase, isSupabaseConfigured, toUUID } from "../lib/supabaseClient";
 import { CARSS_Operations_Server } from "./operationService";
 import { ConstitutionalAuditService } from "./auditService";
-import { BookingAdapter } from "../adapters/BookingAdapter";
+import { MenuRepository } from "../repositories/MenuRepository";
+import { InventoryRepository } from "../repositories/InventoryRepository";
+import { BookingRepository } from "../repositories/BookingRepository";
+import { PaymentRepository } from "../repositories/PaymentRepository";
+import { toUUID } from "../lib/supabaseClient";
 import {
   MenuCategory,
   MenuItem,
@@ -517,103 +520,46 @@ const setLocalStorageData = <T>(key: string, data: T): void => {
 export const CARSS_Revenue_Server = {
   // State detection
   isOnline: (): boolean => {
-    return isSupabaseConfigured();
+    return MenuRepository.isOnline();
   },
 
   // 1. Theme Configuration Storage
   async getSavedTheme(): Promise<ThemeType> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("theme_settings")
-          .select("value")
-          .eq("key", "active_theme")
-          .single();
-        if (data && !error) return data.value as ThemeType;
-      } catch (err) {
-        console.warn("Supabase issue fetching theme_settings, falling back.");
-      }
-    }
-    return getLocalStorageData<ThemeType>("carss_active_theme", "midnight_gold");
+    const res = await MenuRepository.getSavedTheme();
+    return res.success && res.data ? res.data : "midnight_gold";
   },
 
   async saveTheme(theme: ThemeType): Promise<void> {
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("theme_settings")
-          .upsert({ key: "active_theme", value: theme });
-      } catch (err) {
-        console.warn("Supabase issue saving theme_settings, persistent locally.");
-      }
-    }
+    await MenuRepository.saveTheme(theme);
     setLocalStorageData("carss_active_theme", theme);
   },
 
   // 2. categories fetching
   async getCategories(): Promise<MenuCategory[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("menu_categories")
-          .select("*")
-          .order("sort_order", { ascending: true });
-        if (data && !error) return data as MenuCategory[];
-      } catch (err) {
-        console.warn("Supabase categories fetch issue, using local storage");
-      }
-    }
-    return getLocalStorageData<MenuCategory[]>("carss_categories", INITIAL_CATEGORIES);
+    const res = await MenuRepository.getCategories();
+    return res.success && res.data ? res.data : INITIAL_CATEGORIES;
   },
 
   // 3. menu items fetching with inventory attachment
   async getMenuItems(): Promise<MenuItem[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("menu_items")
-          .select("*")
-          .eq("status", "active");
-        if (data && !error) return data as MenuItem[];
-      } catch (err) {
-        console.warn("Supabase menu items fetch issue, using local storage");
-      }
-    }
-    return getLocalStorageData<MenuItem[]>("carss_items", INITIAL_MENU_ITEMS);
+    const res = await MenuRepository.getMenuItems();
+    return res.success && res.data ? res.data : INITIAL_MENU_ITEMS;
   },
 
   // 4. inventory retrieval
   async getInventory(): Promise<InventoryItem[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("inventory")
-          .select("*");
-        if (data && !error && data.length > 0) {
-          return data.map((row: any) => ({
-            id: row.id,
-            menu_item_id: row.sku || "",
-            quantity: Number(row.current_stock) || 0,
-            min_alert_threshold: Number(row.min_stock) || 0,
-            location: row.description || "Main Deck"
-          })) as InventoryItem[];
-        }
-      } catch (err) {
-        console.warn("Supabase inventory fetch issue, using local store");
-      }
-    }
-    return getLocalStorageData<InventoryItem[]>("carss_inventory", INITIAL_INVENTORY);
+    const res = await InventoryRepository.getInventory();
+    return res.success && res.data ? res.data : [];
   },
 
   // 5. Deduct inventory item upon cart purchase/reservation creation
   async updateItemInventory(menuItemId: string, amountToDeduct: number): Promise<void> {
-    const invData = await this.getInventory();
-    const updated = invData.map((item) => {
-      if (item.menu_item_id === menuItemId) {
-        const nextQty = Math.max(0, item.quantity - amountToDeduct);
-        this.logMovement(item.id, -amountToDeduct, "sale", `System checkout order`);
-        
-        // Invoke Wave-3 Compliance operational inventory engine & audit trail
+    const res = await InventoryRepository.deductInventory(menuItemId, amountToDeduct);
+    if (res.success) {
+      // Invoke Wave-3 Compliance operational inventory engine & audit trail
+      const invData = await this.getInventory();
+      const item = invData.find((i) => i.menu_item_id === menuItemId);
+      if (item) {
         CARSS_Operations_Server.addInventoryMovement(
           item.id,
           -amountToDeduct,
@@ -628,39 +574,17 @@ export const CARSS_Revenue_Server = {
           action: "automatic_inventory_consumption",
           resource: `inventory_item:${item.id}`
         });
-
-        return { ...item, quantity: nextQty };
-      }
-      return item;
-    });
-
-    if (this.isOnline()) {
-      try {
-        const target = invData.find(i => i.menu_item_id === menuItemId);
-        if (target) {
-          const nextQty = Math.max(0, target.quantity - amountToDeduct);
-          await supabase
-            .from("inventory")
-            .update({ current_stock: nextQty })
-            .eq("id", target.id);
-        }
-      } catch (err) {
-        console.warn("Supabase inventory update failed. Storing locally.");
       }
     }
-
-    setLocalStorageData("carss_inventory", updated);
   },
 
   // Restock item
   async restockItemInventory(menuItemId: string, amountToAdd: number): Promise<void> {
-    const invData = await this.getInventory();
-    const updated = invData.map((item) => {
-      if (item.menu_item_id === menuItemId) {
-        const nextQty = item.quantity + amountToAdd;
-        this.logMovement(item.id, amountToAdd, "restock", `Staff inventory replenishment`);
-        
-        // Operational level logging
+    const res = await InventoryRepository.restockInventory(menuItemId, amountToAdd);
+    if (res.success) {
+      const invData = await this.getInventory();
+      const item = invData.find((i) => i.menu_item_id === menuItemId);
+      if (item) {
         CARSS_Operations_Server.addInventoryMovement(
           item.id,
           amountToAdd,
@@ -675,82 +599,25 @@ export const CARSS_Revenue_Server = {
           action: "inventory_restock",
           resource: `inventory_item:${item.id}`
         });
-
-        return { ...item, quantity: nextQty };
-      }
-      return item;
-    });
-
-    if (this.isOnline()) {
-      try {
-        const target = invData.find(i => i.menu_item_id === menuItemId);
-        if (target) {
-          const nextQty = target.quantity + amountToAdd;
-          await supabase
-            .from("inventory")
-            .update({ current_stock: nextQty })
-            .eq("id", target.id);
-        }
-      } catch (err) {
-        console.warn("Supabase inventory restock failed. Storing locally.");
       }
     }
-
-    setLocalStorageData("carss_inventory", updated);
   },
 
   // Record inventory movement log
   async logMovement(invItemId: string, change: number, type: "sale" | "restock" | "waste" | "reconciliation", notes: string): Promise<void> {
-    const movements = getLocalStorageData<any[]>("carss_inventory_movements", []);
-    const newMovement = {
-      id: `mov-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      inventory_item_id: invItemId,
-      quantity_changed: change,
-      movement_type: type,
-      notes,
-      created_at: new Date().toISOString()
-    };
-
-    movements.push(newMovement);
-    setLocalStorageData("carss_inventory_movements", movements);
-
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("inventory_movements")
-          .insert({
-            id: newMovement.id,
-            product_id: invItemId,
-            quantity: change,
-            movement_type: type,
-            notes,
-            created_at: newMovement.created_at
-          });
-      } catch (err) {
-        console.warn("Supabase inventory movement logs failed. Locally tracked.");
-      }
-    }
+    await InventoryRepository.recordMovement(invItemId, change, type, notes);
   },
 
   // 6. Promotions fetching
   async getPromotions(): Promise<Promotion[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("promotions")
-          .select("*")
-          .eq("is_active", true);
-        if (data && !error) return data as Promotion[];
-      } catch (err) {
-        console.warn("Supabase promotions fetch issue");
-      }
-    }
-    return getLocalStorageData<Promotion[]>("carss_promotions", INITIAL_PROMOTIONS);
+    const res = await MenuRepository.getPromotions();
+    return res.success && res.data ? res.data : [];
   },
 
   // 7. Booking / Reservation placing
   async getReservations(): Promise<Reservation[]> {
-    return BookingAdapter.getBookings();
+    const res = await BookingRepository.getBookings();
+    return res.success && res.data ? res.data : [];
   },
 
   async placeReservation(res: Omit<Reservation, "id" | "ticket_code" | "status" | "created_at">): Promise<Reservation> {
@@ -764,8 +631,9 @@ export const CARSS_Revenue_Server = {
       created_at: new Date().toISOString()
     };
 
-    // Delegate creation entirely to the constitutional BookingAdapter
-    const savedReservation = await BookingAdapter.createBooking(fullReservation);
+    // Delegate creation entirely to the constitutional BookingRepository
+    const saveRes = await BookingRepository.createBooking(fullReservation);
+    const savedReservation = saveRes.success && saveRes.data ? saveRes.data : fullReservation;
 
     await ConstitutionalAuditService.emitEvent({
       event_type: "place_reservation",
@@ -787,35 +655,14 @@ export const CARSS_Revenue_Server = {
   },
 
   async updateReservationStatus(id: string, status: "pending" | "confirmed" | "cancelled"): Promise<void> {
-    // Delegate state transition and write entirely to constitutional BookingAdapter
-    await BookingAdapter.updateBookingStatus(id, status);
+    // Delegate state transition and write entirely to constitutional BookingRepository
+    await BookingRepository.updateBookingStatus(id, status);
   },
 
   // 8. Payment Intercepts / Intention Loggers
   async getPaymentIntentions(): Promise<PaymentIntention[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("payment_intents")
-          .select("*");
-        if (data && !error && data.length > 0) {
-          return data.map((row: any) => ({
-            id: row.id,
-            reservation_id: row.order_id,
-            amount: Number(row.expected_amount) || 0,
-            payment_method: (row.payment_type || "cash") as any,
-            status: (row.status === "reconciled" ? "reconciled" : row.status === "failed" ? "failed" : "pending") as any,
-            reconciliation_notes: row.rejection_reason || "",
-            payment_reference: row.external_reference || "",
-            shift_id: row.shift_id || "",
-            created_at: row.created_at
-          })) as PaymentIntention[];
-        }
-      } catch (err) {
-        console.warn("Supabase payment intents fetch issue, using local store");
-      }
-    }
-    return getLocalStorageData<PaymentIntention[]>("carss_payment_intentions", []);
+    const res = await PaymentRepository.getPaymentIntents();
+    return res.success && res.data ? res.data : [];
   },
 
   async generatePaymentIntention(intent: Omit<PaymentIntention, "id" | "payment_reference" | "status" | "created_at">): Promise<PaymentIntention> {
@@ -829,32 +676,7 @@ export const CARSS_Revenue_Server = {
       created_at: new Date().toISOString()
     };
 
-    const currentIntents = await this.getPaymentIntentions();
-    currentIntents.unshift(fullIntention);
-    setLocalStorageData("carss_payment_intentions", currentIntents);
-
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("payment_intents")
-          .insert({
-            id: toUUID(fullIntention.id),
-            order_id: fullIntention.reservation_id ? toUUID(fullIntention.reservation_id) : toUUID("reservation-dummy"),
-            org_id: toUUID("org-1"),
-            branch_id: toUUID("branch-1"),
-            staff_id: toUUID("staff-1"),
-            shift_id: fullIntention.shift_id ? toUUID(fullIntention.shift_id) : toUUID("shift-dummy"),
-            expected_amount: fullIntention.amount,
-            payment_type: fullIntention.payment_method,
-            status: fullIntention.status,
-            external_reference: fullIntention.payment_reference,
-            created_at: fullIntention.created_at,
-            approval_status: "pending"
-          });
-      } catch (err) {
-        console.warn("Supabase payment intents recording issue", err);
-      }
-    }
+    await PaymentRepository.createPaymentIntent(fullIntention);
 
     await ConstitutionalAuditService.emitEvent({
       event_type: "generate_payment_intent",
@@ -876,76 +698,51 @@ export const CARSS_Revenue_Server = {
   },
 
   async reconcilePaymentIntention(id: string, notes: string): Promise<void> {
-    const list = await this.getPaymentIntentions();
-    let oldIntention: PaymentIntention | undefined = undefined;
-    const updated = list.map((item) => {
-      if (item.id === id) {
-        oldIntention = item;
-        return { ...item, status: "reconciled" as const, reconciliation_notes: notes };
-      }
-      return item;
+    const listRes = await this.getPaymentIntentions();
+    const oldIntention = listRes.find((item) => item.id === id);
+
+    await PaymentRepository.updatePaymentIntentStatus(id, {
+      status: "reconciled",
+      reconciliation_notes: notes
     });
-    setLocalStorageData("carss_payment_intentions", updated);
-
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("payment_intents")
-          .update({
-            status: "reconciled",
-            approval_status: "approved",
-            approved_by: toUUID("active-manager-sim"),
-            approved_at: new Date().toISOString()
-          })
-          .eq("id", toUUID(id));
-
-        if (oldIntention) {
-          const act: PaymentIntention = oldIntention;
-          const paymentId = `payment-${id}`;
-          await supabase
-            .from("payments")
-            .insert({
-              id: toUUID(paymentId),
-              business_id: toUUID("biz-1"),
-              customer_id: toUUID("customer-dummy"),
-              amount_ngn: Math.floor(act.amount),
-              amount: act.amount,
-              method: act.payment_method,
-              status: "verified",
-              reference: act.payment_reference,
-              note: notes,
-              created_by: toUUID("customer-dummy"),
-              verified_by: toUUID("active-manager-sim"),
-              verified_at: new Date().toISOString(),
-              branch_id: toUUID("branch-1"),
-              org_id: toUUID("org-1"),
-              order_id: act.reservation_id ? toUUID(act.reservation_id) : toUUID("reservation-dummy"),
-              booking_id: act.reservation_id ? toUUID(act.reservation_id) : toUUID("reservation-dummy"),
-              created_at: act.created_at,
-              updated_at: new Date().toISOString()
-            });
-
-          // All audit events must terminate in payment_audit
-          await supabase
-            .from("payment_audit")
-            .insert({
-              id: toUUID(`audit-payment-${id}`),
-              business_id: toUUID("biz-1"),
-              payment_id: toUUID(paymentId),
-              branch_id: toUUID("branch-1"),
-              action: "reconcile",
-              actor_user_id: toUUID("active-manager-sim"),
-              note: notes,
-              meta: { payment_reference: act.payment_reference, amount: act.amount, reconciled_at: new Date().toISOString() }
-            });
-        }
-      } catch (err) {
-        console.warn("Supabase payment reconciliation update issue", err);
-      }
-    }
 
     if (oldIntention) {
-      const activeInt: PaymentIntention = oldIntention;
+      const act: PaymentIntention = oldIntention;
+      const paymentId = `payment-${id}`;
+      
+      await PaymentRepository.recordPayment({
+        id: toUUID(paymentId),
+        business_id: toUUID("biz-1"),
+        customer_id: toUUID("customer-dummy"),
+        amount_ngn: Math.floor(act.amount),
+        amount: act.amount,
+        method: act.payment_method,
+        status: "verified",
+        reference: act.payment_reference,
+        note: notes,
+        created_by: toUUID("customer-dummy"),
+        verified_by: toUUID("active-manager-sim"),
+        verified_at: new Date().toISOString(),
+        branch_id: toUUID("branch-1"),
+        org_id: toUUID("org-1"),
+        order_id: act.reservation_id ? toUUID(act.reservation_id) : toUUID("reservation-dummy"),
+        booking_id: act.reservation_id ? toUUID(act.reservation_id) : toUUID("reservation-dummy"),
+        created_at: act.created_at,
+        updated_at: new Date().toISOString()
+      });
+
+      // All audit events must terminate in payment_audit
+      await PaymentRepository.recordPaymentAudit({
+        id: toUUID(`audit-payment-${id}`),
+        business_id: toUUID("biz-1"),
+        payment_id: toUUID(paymentId),
+        branch_id: toUUID("branch-1"),
+        action: "reconcile",
+        actor_user_id: toUUID("active-manager-sim"),
+        note: notes,
+        meta: { payment_reference: act.payment_reference, amount: act.amount, reconciled_at: new Date().toISOString() }
+      });
+
       await ConstitutionalAuditService.emitEvent({
         event_type: "reconcile_payment_intent",
         event_category: "Payments",
@@ -953,45 +750,20 @@ export const CARSS_Revenue_Server = {
         actor_role: "manager",
         resource_type: "payment",
         resource_id: id,
-        resource_name: `Payment Intent [${activeInt.payment_reference}]`,
-        before_state: JSON.stringify(activeInt),
-        after_state: JSON.stringify({ ...activeInt, status: "reconciled" }),
+        resource_name: `Payment Intent [${act.payment_reference}]`,
+        before_state: JSON.stringify(act),
+        after_state: JSON.stringify({ ...act, status: "reconciled" }),
         notes: `Reconciled booking checkout payment voucher manually. Reconciliation Memo: "${notes}"`,
         source_module: "revenue",
         session_id: `session-ops-${Date.now()}`,
-        shift_id: activeInt.shift_id || ""
+        shift_id: act.shift_id || ""
       });
     }
   },
 
   async getPaymentDisputes(): Promise<PaymentDispute[]> {
-    if (this.isOnline()) {
-      try {
-        const { data, error } = await supabase
-          .from("payment_disputes")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (data && !error) {
-          return data.map((row: any) => ({
-            id: row.id,
-            business_id: row.business_id,
-            branch_id: row.branch_id,
-            payment_id: row.payment_id,
-            dispute_reason: row.dispute_reason,
-            status: row.status as "open" | "resolved",
-            opened_by: row.opened_by,
-            resolved_by: row.resolved_by,
-            resolution_note: row.resolution_note,
-            created_at: row.created_at,
-            resolved_at: row.resolved_at,
-            paid_at: row.paid_at
-          })) as PaymentDispute[];
-        }
-      } catch (err) {
-        console.warn("Supabase payment disputes fetch issue, using local store");
-      }
-    }
-    return getLocalStorageData<PaymentDispute[]>("carss_payment_disputes", []);
+    const res = await PaymentRepository.getPaymentDisputes();
+    return res.success && res.data ? res.data : [];
   },
 
   async createPaymentDispute(paymentId: string, reason: string): Promise<void> {
@@ -1007,28 +779,7 @@ export const CARSS_Revenue_Server = {
       created_at: new Date().toISOString()
     };
 
-    const currentDisputes = await this.getPaymentDisputes();
-    currentDisputes.unshift(dispute);
-    setLocalStorageData("carss_payment_disputes", currentDisputes);
-
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("payment_disputes")
-          .insert({
-            id: toUUID(id),
-            business_id: toUUID("biz-1"),
-            branch_id: toUUID("branch-1"),
-            payment_id: toUUID(paymentId),
-            dispute_reason: reason,
-            status: "open",
-            opened_by: toUUID("active-manager-sim"),
-            created_at: dispute.created_at
-          });
-      } catch (err) {
-        console.warn("Supabase dispute recording issue", err);
-      }
-    }
+    await PaymentRepository.createPaymentDispute(dispute);
 
     await ConstitutionalAuditService.emitEvent({
       event_type: "create_payment_dispute",
@@ -1049,37 +800,9 @@ export const CARSS_Revenue_Server = {
 
   async resolvePaymentDispute(id: string, notes: string): Promise<void> {
     const currentDisputes = await this.getPaymentDisputes();
-    let oldDispute: PaymentDispute | null = null;
-    const updated = currentDisputes.map((item) => {
-      if (item.id === id) {
-        oldDispute = item;
-        return {
-          ...item,
-          status: "resolved" as const,
-          resolution_note: notes,
-          resolved_by: "active-manager-sim",
-          resolved_at: new Date().toISOString()
-        };
-      }
-      return item;
-    });
-    setLocalStorageData("carss_payment_disputes", updated);
+    const oldDispute = currentDisputes.find((item) => item.id === id);
 
-    if (this.isOnline()) {
-      try {
-        await supabase
-          .from("payment_disputes")
-          .update({
-            status: "resolved",
-            resolution_note: notes,
-            resolved_by: toUUID("active-manager-sim"),
-            resolved_at: new Date().toISOString()
-          })
-          .eq("id", toUUID(id));
-      } catch (err) {
-        console.warn("Supabase dispute resolution update issue", err);
-      }
-    }
+    await PaymentRepository.resolvePaymentDispute(id, notes);
 
     if (oldDispute) {
       const activeDisp: PaymentDispute = oldDispute;

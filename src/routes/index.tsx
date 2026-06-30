@@ -13,8 +13,6 @@ const CustomerHomepage = lazy(() => import("../pages/CustomerHomepage"));
 const PublicGatewayPage = lazy(() => import("../pages/PublicGatewayPage"));
 const CEOLogin = lazy(() => import("../pages/auth/CEOLogin"));
 const StaffLogin = lazy(() => import("../pages/auth/StaffLogin"));
-const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const Bootstrap = lazy(() => import("../pages/auth/Bootstrap"));
 const Onboarding = lazy(() => import("../pages/Onboarding"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
@@ -45,8 +43,6 @@ export function AppRoutes() {
           {/* Auth Channels */}
           <Route path="/auth/ceo" element={<CEOLogin />} />
           <Route path="/auth/staff" element={<StaffLogin />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/bootstrap" element={<Bootstrap />} />
 
           {/* Protected Area */}

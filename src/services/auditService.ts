@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { AuditRepository } from "../repositories/AuditRepository";
 import { AuditEvent, EventCategoryType } from "../types";
 
 // Development Seed Audit Events to populate chronological history on initial load
@@ -143,7 +143,7 @@ export interface AnomalyLog {
 
 export const ConstitutionalAuditService = {
   isOnline(): boolean {
-    return isSupabaseConfigured();
+    return AuditRepository.isOnline();
   },
 
   reseedSandbox(): AuditEvent[] {
@@ -156,25 +156,16 @@ export const ConstitutionalAuditService = {
    * Safely dispatches audit events to local storage first, then proxies to Supabase async
    */
   async emitEvent(event: Omit<AuditEvent, "id" | "created_at">): Promise<AuditEvent> {
-    const newEvent: AuditEvent = {
+    const res = await AuditRepository.recordEvent(event);
+    if (res.success && res.data) {
+      return res.data;
+    }
+    const fallbackEvent: AuditEvent = {
       ...event,
       id: `evt-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       created_at: new Date().toISOString()
     };
-
-    const current = getStorageEvents();
-    current.unshift(newEvent);
-    setStorageEvents(current);
-
-    if (this.isOnline()) {
-      try {
-        await supabase.from("audit_events").insert(newEvent);
-      } catch (err) {
-        console.warn("Supabase audit_events write postponed:", err);
-      }
-    }
-
-    return newEvent;
+    return fallbackEvent;
   },
 
   /**
@@ -193,26 +184,8 @@ export const ConstitutionalAuditService = {
     customStart?: string;
     customEnd?: string;
   }): Promise<AuditEvent[]> {
-    let events = getStorageEvents();
-
-    if (this.isOnline()) {
-      try {
-        let query = supabase.from("audit_events").select("*").order("created_at", { ascending: false });
-        if (filters?.operatorId) query = query.eq("actor_id", filters.operatorId);
-        if (filters?.role) query = query.eq("actor_role", filters.role);
-        if (filters?.resourceType) query = query.eq("resource_type", filters.resourceType);
-        if (filters?.resourceId) query = query.eq("resource_id", filters.resourceId);
-        if (filters?.eventCategory) query = query.eq("event_category", filters.eventCategory);
-        if (filters?.shiftId) query = query.eq("shift_id", filters.shiftId);
-
-        const { data, error } = await query;
-        if (data && !error) {
-          events = data as AuditEvent[];
-        }
-      } catch (err) {
-        console.warn("Supabase audit query fallback, resolving offline ledger.");
-      }
-    }
+    const res = await AuditRepository.getTimeline(filters);
+    let events = res.success && res.data ? res.data : [];
 
     // Apply strict semantic filtering locally to guarantee consistency
     return events.filter(e => {

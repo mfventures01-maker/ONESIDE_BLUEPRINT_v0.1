@@ -284,3 +284,23 @@ export interface AuditEvent {
   created_at: string;
 }
 
+export interface ExecutionContext {
+  businessId: string;
+  branchId: string;
+  departmentId: string | null;
+  operatorId: string;
+  role: string;
+  shiftId: string | null;
+  requestId: string;
+}
+
+export interface CarssResult<T> {
+  success: boolean;
+  status: number;
+  message: string;
+  requestId: string;
+  timestamp: string;
+  data: T | null;
+  errors: string[] | null;
+}
+

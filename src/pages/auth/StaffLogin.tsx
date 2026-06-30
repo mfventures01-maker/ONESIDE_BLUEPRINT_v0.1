@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Key, Fingerprint, ShieldAlert, BookOpen } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "../../state/auth/useAuth";
-import { verifyPin } from "../../services/pinService";
+import { StaffRepository } from "../../repositories/StaffRepository";
 
 export default function StaffLogin() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function StaffLogin() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -30,11 +30,13 @@ export default function StaffLogin() {
       return;
     }
 
-    const verifiedProfile = verifyPin(operatorId.toUpperCase().trim(), pin);
-    if (!verifiedProfile) {
+    const res = await StaffRepository.verifyPin(operatorId.toUpperCase().trim(), pin);
+    if (!res.success || !res.data) {
       setError("OPERATOR VERIFICATION EXCEPTION: Pin fingerprint or identification mismatches.");
       return;
     }
+
+    const verifiedProfile = res.data;
 
     // Successfully verified, trigger session login
     simulateLogin(

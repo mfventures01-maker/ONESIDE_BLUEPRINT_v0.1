@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { isSupabaseConfigured } from "../lib/supabaseClient";
 import {
   Reservation,
   PaymentIntention,
