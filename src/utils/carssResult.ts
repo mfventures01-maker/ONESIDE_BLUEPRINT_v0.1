@@ -7,16 +7,12 @@ import { CarssResult } from "../types";
 
 export function createCarssSuccess<T>(
   data: T,
-  message = "Operation completed successfully",
-  status = 200,
-  requestId = `req-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  message?: string,
+  status?: number,
+  requestId?: string
 ): CarssResult<T> {
   return {
     success: true,
-    status,
-    message,
-    requestId,
-    timestamp: new Date().toISOString(),
     data,
     errors: null
   };
@@ -24,17 +20,30 @@ export function createCarssSuccess<T>(
 
 export function createCarssError<T>(
   errors: string[],
-  message = "Operation failed",
-  status = 400,
-  requestId = `req-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  message?: string,
+  status?: number,
+  requestId?: string
 ): CarssResult<T> {
   return {
     success: false,
-    status,
-    message,
-    requestId,
-    timestamp: new Date().toISOString(),
     data: null,
     errors
+  };
+}
+
+export function enrichWithContext<T>(
+  result: CarssResult<T>,
+  message = "Operation completed successfully",
+  status = 200,
+  requestId = `req-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+): Required<CarssResult<T>> {
+  return {
+    success: result.success,
+    status: result.success ? status : 400,
+    message: result.success ? message : "Operation failed",
+    requestId,
+    timestamp: new Date().toISOString(),
+    data: result.data as any,
+    errors: result.errors
   };
 }

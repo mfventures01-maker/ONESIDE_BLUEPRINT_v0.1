@@ -53,36 +53,76 @@ export const INITIAL_PROMOTIONS: any[] = [];
 
 export const INITIAL_INVENTORY: any[] = [];
 
-export const OfflineStorage = {
-  getItem(key: string): string | null {
+export interface OfflineSyncAdapter {
+  read(key: string): string | null;
+  write(key: string, value: string): void;
+  delete(key: string): void;
+}
+
+export class LocalStorageAdapter implements OfflineSyncAdapter {
+  read(key: string): string | null {
     if (typeof window !== "undefined") {
       return localStorage.getItem(key);
     }
     return null;
-  },
+  }
 
-  setItem(key: string, value: string): void {
+  write(key: string, value: string): void {
     if (typeof window !== "undefined") {
       localStorage.setItem(key, value);
     }
-  },
+  }
 
-  removeItem(key: string): void {
+  delete(key: string): void {
     if (typeof window !== "undefined") {
       localStorage.removeItem(key);
     }
-  },
+  }
+}
+
+export class OfflineMirror implements OfflineSyncAdapter {
+  private adapter: OfflineSyncAdapter;
+
+  constructor(adapter: OfflineSyncAdapter) {
+    this.adapter = adapter;
+  }
+
+  read(key: string): string | null {
+    return this.adapter.read(key);
+  }
+
+  write(key: string, value: string): void {
+    this.adapter.write(key, value);
+  }
+
+  delete(key: string): void {
+    this.adapter.delete(key);
+  }
+
+  getItem(key: string): string | null {
+    return this.read(key);
+  }
+
+  setItem(key: string, value: string): void {
+    this.write(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.delete(key);
+  }
 
   getJson<T>(key: string, defaultValue: T): T {
     try {
-      const val = this.getItem(key);
+      const val = this.read(key);
       return val ? JSON.parse(val) : defaultValue;
     } catch {
       return defaultValue;
     }
-  },
+  }
 
   setJson<T>(key: string, value: T): void {
-    this.setItem(key, JSON.stringify(value));
+    this.write(key, JSON.stringify(value));
   }
-};
+}
+
+export const OfflineStorage = new OfflineMirror(new LocalStorageAdapter());

@@ -296,10 +296,10 @@ export interface ExecutionContext {
 
 export interface CarssResult<T> {
   success: boolean;
-  status: number;
-  message: string;
-  requestId: string;
-  timestamp: string;
+  status?: number;
+  message?: string;
+  requestId?: string;
+  timestamp?: string;
   data: T | null;
   errors: string[] | null;
 }
