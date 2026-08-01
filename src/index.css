@@ -1,9 +1,15 @@
 @import "tailwindcss";
+@import "./styles/globals.css";
 
 @theme {
   --color-zinc-850: #1f1f23;
   --color-zinc-925: #0e0e11;
   --color-zinc-950: #09090b;
+  --color-deep-slate: #0F172A;
+  --color-burnt-ochre: #C46210;
+  --color-whatsapp-green: #25D366;
+  --font-montserrat: Montserrat, sans-serif;
+  --font-inter: Inter, sans-serif;
 }
 
 html, body, #root {
@@ -11,7 +17,7 @@ html, body, #root {
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #09090b;
-  color: #f4f4f5;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  background-color: #0F172A;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
 }

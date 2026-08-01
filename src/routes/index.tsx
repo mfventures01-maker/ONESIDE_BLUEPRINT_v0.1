@@ -18,6 +18,7 @@ const Onboarding = lazy(() => import("../pages/Onboarding"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Notifications = lazy(() => import("../pages/Notifications"));
+const Audit = lazy(() => import("../pages/Audit"));
 const AuditRoom = lazy(() => import("../pages/AuditRoom"));
 const Reports = lazy(() => import("../pages/Reports"));
 
@@ -86,7 +87,7 @@ export function AppRoutes() {
             path="/audit"
             element={
               <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <AuditRoom />
+                <Audit />
               </ProtectedRoute>
             }
           />

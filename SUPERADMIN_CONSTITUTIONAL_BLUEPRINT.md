@@ -1,5 +1,11 @@
 # Oneside Entertainment Superadmin – Constitutional Deterministic Blueprint
 
+```yaml
+Git HEAD: a37331c54d38ac1a4d114dc68fe9e4bdd34a771d
+Version: v1.0-superadmin
+Status: CONSTITUTIONALLY FROZEN
+```
+
 ## 1. Project Identity & Territory Map
 - **User Type**: Superadmin (Role Level 100).
 - **Operational Scope**: Global (All Territories). RLS exemption via `carss_rls_ssot_gate`.
