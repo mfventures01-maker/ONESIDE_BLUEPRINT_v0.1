@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -688,7 +688,7 @@ export const CARSS_Revenue_Server = {
       resource_name: `Payment Intent [${fullIntention.payment_reference}]`,
       before_state: "{}",
       after_state: JSON.stringify(fullIntention),
-      notes: `Initiated reservation checkout invoice payment intentions of ₦${fullIntention.amount.toLocaleString()} via ${fullIntention.payment_method.toUpperCase()}`,
+      notes: `Initiated reservation checkout invoice payment intentions of â‚¦${fullIntention.amount.toLocaleString()} via ${fullIntention.payment_method.toUpperCase()}`,
       source_module: "revenue",
       session_id: `session-rev-${Date.now()}`,
       shift_id: fullIntention.shift_id || ""
@@ -1022,3 +1022,4 @@ ON CONFLICT (key) DO NOTHING;
 `;
   }
 };
+

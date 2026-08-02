@@ -1,0 +1,1 @@
+import{j as t}from"./index-C3tPWCbe.js";function s(){return t.jsxs("div",{className:"w-full h-full p-6 glass-panel",children:[t.jsx("h1",{className:"font-montserrat text-2xl font-bold tracking-tighter text-white",children:"Audit Observatory"}),t.jsx("p",{className:"text-slate-400 mt-2 font-inter",children:"Constitutional Audit Feed loading..."})]})}export{s as default};

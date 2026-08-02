@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -283,7 +283,7 @@ ${preorderDetails}
 ${
   pay
     ? `*PAYMENT METHOD:* ${pay.payment_method.toUpperCase()}
-*AMOUNT DUE:* ₦${(pay.amount).toLocaleString()} NGN
+*AMOUNT DUE:* â‚¦${(pay.amount).toLocaleString()} NGN
 *PAYMENT REF:* ${pay.payment_reference}
 *STATUS:* PENDING STAFF RECONCILIATION`
     : `*PAYMENT:* NO BALANCE DUE`
@@ -585,7 +585,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
                           {item.name}
                         </h4>
                         <span className="font-mono text-sm text-amber-500 font-extrabold bg-zinc-950/70 border border-zinc-850 px-2 py-0.5 rounded-lg shrink-0">
-                          ₦{(item.price).toLocaleString()}
+                          â‚¦{(item.price).toLocaleString()}
                         </span>
                       </div>
 
@@ -673,7 +673,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
                           {c.item.name}
                         </span>
                         <span className="block text-[9px] font-mono text-zinc-500">
-                          ₦{c.item.price.toLocaleString()} x {c.count}
+                          â‚¦{c.item.price.toLocaleString()} x {c.count}
                         </span>
                       </div>
 
@@ -700,15 +700,15 @@ _System Audit secured by CARSS Constitutional Engine_`;
                 <div className="border-t border-zinc-850 pt-3 space-y-1.5 font-mono text-[9px] text-zinc-400">
                   <div className="flex justify-between">
                     <span>Pre-Order Subtotal:</span>
-                    <span>₦{cartSubtotal.toLocaleString()}</span>
+                    <span>â‚¦{cartSubtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-emerald-400">
                     <span>Shift Loyalty Discount ({discountPercent}%):</span>
-                    <span>- ₦{discountAmount.toLocaleString()}</span>
+                    <span>- â‚¦{discountAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-white font-bold text-[11px] border-t border-zinc-850 pt-2">
                     <span>Gourmet Total:</span>
-                    <span>₦{cartTotal.toLocaleString()}</span>
+                    <span>â‚¦{cartTotal.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -746,7 +746,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
                       bookingType === "snooker" ? "bg-zinc-900 text-white font-black" : "text-zinc-500"
                     }`}
                   >
-                    Snooker (₦8k)
+                    Snooker (â‚¦8k)
                   </button>
                   <button
                     type="button"
@@ -755,7 +755,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
                       bookingType === "vip" ? "bg-zinc-900 text-white font-black" : "text-zinc-500"
                     }`}
                   >
-                    VIP Lounge (₦15k)
+                    VIP Lounge (â‚¦15k)
                   </button>
                   <button
                     type="button"
@@ -772,12 +772,12 @@ _System Audit secured by CARSS Constitutional Engine_`;
               {/* Dynamic instruction about booking fee */}
               {bookingType === "vip" && (
                 <div className="p-2.5 bg-amber-950/20 border border-amber-500/10 rounded-xl font-sans text-[10px] text-amber-300">
-                  VIP Lounge booth booking includes executive sound system partition. A reservation fee of ₦15,000 applies.
+                  VIP Lounge booth booking includes executive sound system partition. A reservation fee of â‚¦15,000 applies.
                 </div>
               )}
               {bookingType === "snooker" && (
                 <div className="p-2.5 bg-indigo-950/20 border border-indigo-500/10 rounded-xl font-sans text-[10px] text-indigo-300">
-                  Pre-booking Snooker arena reserves table + premium cue sticks. A standard reservation slot of ₦8,000 applies.
+                  Pre-booking Snooker arena reserves table + premium cue sticks. A standard reservation slot of â‚¦8,000 applies.
                 </div>
               )}
 
@@ -950,7 +950,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
                   <div className="space-y-1.5 pt-1.5">
                     <div className="flex justify-between border-b border-zinc-925 pb-1 font-bold">
                       <span className="text-zinc-500">TOTAL DUE:</span>
-                      <span className="text-emerald-400">₦{(activeReceipt.payment.amount).toLocaleString()} NGN</span>
+                      <span className="text-emerald-400">â‚¦{(activeReceipt.payment.amount).toLocaleString()} NGN</span>
                     </div>
                     <div className="flex justify-between border-b border-zinc-925 pb-1 text-[9px]">
                       <span className="text-zinc-500">INTENT METHOD:</span>
@@ -987,7 +987,7 @@ _System Audit secured by CARSS Constitutional Engine_`;
 
       {/* Footer credits and diagnostic */}
       <footer className="max-w-7xl mx-auto w-full border-t border-zinc-900 pt-6 mt-16 flex flex-col sm:flex-row items-center justify-between gap-4 text-center font-mono text-[9px] text-zinc-500 uppercase tracking-widest leading-relaxed">
-        <span>© 2026 ONESIDE ENTERTAINMENT GROUP. ALL CONSTITUTIONAL CONTROL CORES SECURED.</span>
+        <span>Â© 2026 ONESIDE ENTERTAINMENT GROUP. ALL CONSTITUTIONAL CONTROL CORES SECURED.</span>
         
         <div className="flex flex-wrap gap-4 justify-center">
           <span className="flex items-center gap-1.5">
@@ -1000,3 +1000,4 @@ _System Audit secured by CARSS Constitutional Engine_`;
     </div>
   );
 }
+

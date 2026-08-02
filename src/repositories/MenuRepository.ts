@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.5
  */
@@ -17,7 +17,7 @@ export const MenuRepository = {
     try {
       if (this.isOnline()) {
         const { data, error } = await supabase
-          .from("theme_settings")
+          .from("business_settings")
           .select("value")
           .eq("key", "active_theme")
           .single();
@@ -35,7 +35,7 @@ export const MenuRepository = {
     try {
       if (this.isOnline()) {
         const { error } = await supabase
-          .from("theme_settings")
+          .from("business_settings")
           .upsert({ key: "active_theme", value: theme });
         if (error) {
           console.warn("Supabase upsert theme_settings failed:", error.message);
@@ -52,7 +52,7 @@ export const MenuRepository = {
     try {
       if (this.isOnline()) {
         const { data, error } = await supabase
-          .from("menu_categories")
+          .from("product_categories")
           .select("*")
           .order("sort_order", { ascending: true });
         if (error) {
@@ -94,7 +94,7 @@ export const MenuRepository = {
     try {
       if (this.isOnline()) {
         const { data, error } = await supabase
-          .from("promotions")
+          .from("price_rules")
           .select("*")
           .eq("is_active", true);
         if (error) {
@@ -111,3 +111,4 @@ export const MenuRepository = {
     return createCarssSuccess(cached, "Promotions fetched offline successfully");
   }
 };
+

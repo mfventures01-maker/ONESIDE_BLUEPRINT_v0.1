@@ -1,110 +1,83 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+﻿import { lazy } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import PublicLayout from '../layouts/PublicLayout';
+import AuthenticatedLayout from '../layouts/AuthenticatedLayout';
+import DashboardLayout from '../layouts/DashboardLayout';
+import OnboardingLayout from '../layouts/OnboardingLayout';
+import ErrorLayout from '../layouts/ErrorLayout';
 
-import React, { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthBoundary } from "../guards/AuthBoundary";
-import { ProtectedRoute } from "../guards/ProtectedRoute";
+// Lazy-loaded pages
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Orders = lazy(() => import('../pages/Orders'));
+const Inventory = lazy(() => import('../pages/Inventory'));
+const Products = lazy(() => import('../pages/Products'));
+const Media = lazy(() => import('../pages/Media'));
+const Customers = lazy(() => import('../pages/Customers'));
+const Staff = lazy(() => import('../pages/Staff'));
+const Roles = lazy(() => import('../pages/Roles'));
+const Shifts = lazy(() => import('../pages/Shifts'));
+const Tables = lazy(() => import('../pages/Tables'));
+const Reservations = lazy(() => import('../pages/Reservations'));
+const Bookings = lazy(() => import('../pages/Bookings'));
+const Properties = lazy(() => import('../pages/Properties'));
+const Reports = lazy(() => import('../pages/Reports'));
+const Analytics = lazy(() => import('../pages/Analytics'));
+const Settings = lazy(() => import('../pages/Settings'));
+const Profile = lazy(() => import('../pages/Profile'));
+const Notifications = lazy(() => import('../pages/Notifications'));
+const Onboarding = lazy(() => import('../pages/Onboarding'));
 
-// Lazy loading pages
-const CustomerHomepage = lazy(() => import("../pages/CustomerHomepage"));
-const PublicGatewayPage = lazy(() => import("../pages/PublicGatewayPage"));
-const CEOLogin = lazy(() => import("../pages/auth/CEOLogin"));
-const StaffLogin = lazy(() => import("../pages/auth/StaffLogin"));
-const Bootstrap = lazy(() => import("../pages/auth/Bootstrap"));
-const Onboarding = lazy(() => import("../pages/Onboarding"));
-const Dashboard = lazy(() => import("../pages/Dashboard"));
-const Profile = lazy(() => import("../pages/Profile"));
-const Notifications = lazy(() => import("../pages/Notifications"));
-const Audit = lazy(() => import("../pages/Audit"));
-const AuditRoom = lazy(() => import("../pages/AuditRoom"));
-const Reports = lazy(() => import("../pages/Reports"));
-
-// Base fallback preloader
-function RoutePreloader() {
+export default function AppRoutes() {
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400 font-mono text-xs gap-2">
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-505 animate-pulse" />
-      <span>LOADING CONTEXT BOUNDS...</span>
-    </div>
-  );
-}
+    <Routes>
+      {/* Public routes */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<div>Homepage (Public Gateway)</div>} />
+      </Route>
 
-export function AppRoutes() {
-  return (
-    <AuthBoundary>
-      <Suspense fallback={<RoutePreloader />}>
-        <Routes>
-          {/* Public Storefront */}
-          <Route path="/" element={<CustomerHomepage />} />
-          <Route path="/admin/gateway" element={<PublicGatewayPage />} />
+      {/* Authenticated routes (protected) */}
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/notifications" element={<Notifications />} />
+      </Route>
 
-          {/* Auth Channels */}
-          <Route path="/auth/ceo" element={<CEOLogin />} />
-          <Route path="/auth/staff" element={<StaffLogin />} />
-          <Route path="/bootstrap" element={<Bootstrap />} />
+      {/* Dashboard routes (protected by RoleGuard) */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/list" element={<div>Order List</div>} />
+        <Route path="/orders/detail" element={<div>Order Detail</div>} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/inventory/items" element={<div>Inventory Items</div>} />
+        <Route path="/inventory/movements" element={<div>Inventory Movements</div>} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/catalog" element={<div>Product Catalog</div>} />
+        <Route path="/products/categories" element={<div>Product Categories</div>} />
+        <Route path="/media" element={<Media />} />
+        <Route path="/media/bank" element={<div>Media Bank</div>} />
+        <Route path="/media/uploads" element={<div>Media Uploads</div>} />
+        <Route path="/customers" element={<Customers />} />
+        <Route path="/staff" element={<Staff />} />
+        <Route path="/roles" element={<Roles />} />
+        <Route path="/shifts" element={<Shifts />} />
+        <Route path="/tables" element={<Tables />} />
+        <Route path="/reservations" element={<Reservations />} />
+        <Route path="/bookings" element={<Bookings />} />
+        <Route path="/properties" element={<Properties />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
 
-          {/* Protected Area */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+      {/* Onboarding route (Superadmin only) */}
+      <Route element={<OnboardingLayout />}>
+        <Route path="/onboarding" element={<Onboarding />} />
+      </Route>
 
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager"]}>
-                <Onboarding />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <Notifications />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/audit"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <Audit />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin", "ceo", "manager", "staff"]}>
-                <Reports />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Wildcard Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </AuthBoundary>
+      {/* Error route */}
+      <Route element={<ErrorLayout />}>
+        <Route path="*" element={<div>404 – Page Not Found</div>} />
+      </Route>
+    </Routes>
   );
 }

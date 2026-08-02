@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.5
  */
@@ -18,7 +18,7 @@ export const InventoryRepository = {
     try {
       if (this.isOnline()) {
         const { data, error } = await supabase
-          .from("menu_categories")
+          .from("product_categories")
           .select("*")
           .order("sort_order", { ascending: true });
         if (error) {
@@ -235,3 +235,4 @@ export const InventoryRepository = {
     }
   }
 };
+
