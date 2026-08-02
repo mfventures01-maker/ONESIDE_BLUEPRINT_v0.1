@@ -1,264 +1,154 @@
-/**
- * CARSS Constitutional AdminShield Component
- *
- * TESTING VERIFICATION STEPS:
- * 1. Click the Shield -> "Admin / CEO" -> Login with mfventures01@gmail.com (Superadmin).
- * 2. The page should reload and redirect to /onboarding.
- * 3. Click the Shield -> "Staff PIN" -> Enter a valid 4-6 digit PIN from staff_profiles.pin_code.
- * 4. The page should reload and redirect to /dashboard (or the staff's assigned workspace).
- */
-
-import React, { useState } from 'react';
-import { Shield, X, User, Key, Mail, Lock } from 'lucide-react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase/client';
 import { rpcClient } from '../lib/rpc/rpcClient';
+import { Shield, X, User, Key, Mail, Lock } from 'lucide-react';
 
-export function AdminShield() {
+export default function AdminShield() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<'admin' | 'pin'>('admin');
+  const [mode, setMode] = useState<'email' | 'pin'>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  const togglePopover = () => {
-    setIsOpen((prev) => !prev);
-    setError(null);
+  const toggleShield = () => {
+    setIsOpen(!isOpen);
+    setError('');
+    setLoading(false);
   };
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    if (!email || !password) {
-      setError('Email and password are required');
-      return;
-    }
-
     setLoading(true);
+    setError('');
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        setError(authError.message || 'Authentication failed');
-        setLoading(false);
-        return;
-      }
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
       setIsOpen(false);
       window.location.reload();
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      setError(err.message || 'Invalid credentials');
+    } finally {
       setLoading(false);
     }
   };
 
   const handlePinLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    if (!pin || pin.trim().length < 4) {
-      setError('Please enter a valid 4 to 6 digit PIN');
-      return;
-    }
-
     setLoading(true);
+    setError('');
     try {
-      const { data, error: rpcError } = await rpcClient.call('authenticate_with_pin', { pin });
-
-      if (rpcError) {
-        setError(rpcError.message || 'Invalid or inactive PIN');
-        setLoading(false);
-        return;
-      }
-
-      if (data === false) {
-        setError('Authentication rejected: Invalid PIN');
-        setLoading(false);
-        return;
-      }
-
+      await rpcClient.call('authenticate_with_pin', { pin });
       setIsOpen(false);
       window.location.reload();
     } catch (err: any) {
-      setError(err.message || 'PIN verification failed');
+      setError('Invalid PIN or staff profile not found.');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Popover Gateway Panel */}
+    <div className="fixed bottom-6 right-6 z-50 font-inter">
+      <button
+        onClick={toggleShield}
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full glass-panel bg-deep-slate/80 border border-white/10 shadow-2xl transition-all hover:scale-105 hover:border-burnt-ochre"
+      >
+        <Shield className="h-6 w-6 text-slate-400 group-hover:text-burnt-ochre transition-colors" />
+        <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-whatsapp-green text-[8px] text-white font-bold">1</div>
+      </button>
+
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 sm:w-96 glass-panel p-5 shadow-2xl animate-popover text-white border border-white/10">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
-            <div className="flex items-center space-x-2">
-              <div className="p-1.5 rounded-lg bg-[#C46210]/20 border border-[#C46210]/40">
-                <Shield className="w-5 h-5 text-[#C46210]" />
-              </div>
-              <div>
-                <h3 className="font-montserrat text-sm font-bold tracking-wider uppercase text-white">
-                  Admin Gateway
-                </h3>
-                <p className="font-inter text-xs text-slate-400">
-                  CARSS Constitutional Access
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={togglePopover}
-              className="p-1 text-slate-400 hover:text-white rounded-md transition-colors"
-              aria-label="Close Admin Shield"
-            >
-              <X className="w-5 h-5" />
+        <div className="absolute bottom-20 right-0 w-80 rounded-xl glass-panel border border-white/10 shadow-2xl p-5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
+            <h3 className="font-montserrat text-sm font-bold uppercase tracking-wider text-white">
+              <Key className="inline h-4 w-4 mr-2 text-burnt-ochre" /> Admin Gate
+            </h3>
+            <button onClick={toggleShield} className="text-slate-400 hover:text-white">
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 mb-4 rounded-lg bg-slate-900/80 border border-white/5">
+          <div className="flex gap-2 mb-4 bg-white/5 rounded-lg p-1">
             <button
-              type="button"
-              onClick={() => {
-                setMode('admin');
-                setError(null);
-              }}
-              className={`py-1.5 text-xs font-montserrat uppercase tracking-wider rounded-md transition-all ${
-                mode === 'admin'
-                  ? 'bg-[#C46210] text-white font-semibold shadow'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              onClick={() => setMode('email')}
+              className={lex-1 rounded-md py-1.5 text-xs font-semibold transition-colors }
             >
               Admin / CEO
             </button>
             <button
-              type="button"
-              onClick={() => {
-                setMode('pin');
-                setError(null);
-              }}
-              className={`py-1.5 text-xs font-montserrat uppercase tracking-wider rounded-md transition-all ${
-                mode === 'pin'
-                  ? 'bg-[#25D366] text-black font-semibold shadow'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              onClick={() => setMode('pin')}
+              className={lex-1 rounded-md py-1.5 text-xs font-semibold transition-colors }
             >
               Staff PIN
             </button>
           </div>
 
-          {/* Error Banner */}
           {error && (
-            <div className="mb-4 p-2.5 rounded-md bg-red-950/80 border border-red-500/40 text-red-200 text-xs font-inter flex items-start space-x-2">
-              <span className="font-bold">!</span>
-              <span>{error}</span>
+            <div className="mb-3 rounded border border-red-500/20 bg-red-500/10 p-2 text-center text-xs text-red-400">
+              {error}
             </div>
           )}
 
-          {/* Email/Password Form for Superadmin & CEO */}
-          {mode === 'admin' ? (
-            <form onSubmit={handleAdminLogin} className="space-y-3.5">
-              <div>
-                <label className="block text-[10px] font-montserrat uppercase tracking-wider text-slate-300 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="admin@oneside.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-900/90 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#C46210] font-inter transition-colors"
-                  />
-                </div>
+          {mode === 'email' ? (
+            <form onSubmit={handleEmailLogin} className="space-y-3">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-burnt-ochre focus:outline-none"
+                  required
+                />
               </div>
-
-              <div>
-                <label className="block text-[10px] font-montserrat uppercase tracking-wider text-slate-300 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-slate-900/90 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#C46210] font-inter transition-colors"
-                  />
-                </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-burnt-ochre focus:outline-none"
+                  required
+                />
               </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-2.5 px-4 bg-[#C46210] hover:bg-[#A3510C] text-white font-montserrat uppercase tracking-wider text-xs font-bold rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full rounded-lg bg-burnt-ochre py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {loading ? (
-                  <span className="animate-pulse">Authenticating...</span>
-                ) : (
-                  <>
-                    <User className="w-4 h-4" />
-                    <span>Authorize Access</span>
-                  </>
-                )}
+                {loading ? 'Authenticating...' : 'Access Portal'}
               </button>
             </form>
           ) : (
-            /* PIN Form for Staff */
-            <form onSubmit={handlePinLogin} className="space-y-3.5">
-              <div>
-                <label className="block text-[10px] font-montserrat uppercase tracking-wider text-slate-300 mb-1">
-                  Enter 4-6 Digit Staff PIN
-                </label>
-                <div className="relative">
-                  <Key className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-                  <input
-                    type="password"
-                    maxLength={6}
-                    required
-                    placeholder="••••"
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    className="w-full bg-slate-900/90 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white tracking-widest placeholder-slate-500 focus:outline-none focus:border-[#25D366] font-mono transition-colors"
-                  />
-                </div>
+            <form onSubmit={handlePinLogin} className="space-y-3">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter Staff PIN (4-6 digits)"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full rounded-lg bg-white/5 border border-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-burnt-ochre focus:outline-none tracking-[0.5em]"
+                  required
+                />
               </div>
-
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full mt-2 py-2.5 px-4 bg-[#25D366] hover:bg-[#1FA851] text-black font-montserrat uppercase tracking-wider text-xs font-bold rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
+                disabled={loading || pin.length < 4}
+                className="w-full rounded-lg bg-whatsapp-green py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {loading ? (
-                  <span className="animate-pulse">Verifying PIN...</span>
-                ) : (
-                  <>
-                    <Key className="w-4 h-4" />
-                    <span>Authenticate PIN</span>
-                  </>
-                )}
+                {loading ? 'Verifying PIN...' : 'Unlock Workspace'}
               </button>
             </form>
           )}
         </div>
       )}
-
-      {/* Floating Shield Button */}
-      <button
-        onClick={togglePopover}
-        className="animate-breathing group flex items-center justify-center w-12 h-12 rounded-full bg-[#C46210] hover:bg-[#A3510C] text-white shadow-2xl border border-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#C46210] focus:ring-offset-2 focus:ring-offset-[#0F172A]"
-        aria-label="Open Admin Shield Gateway"
-      >
-        <Shield className="w-6 h-6 transition-transform duration-200 group-hover:scale-110" />
-      </button>
     </div>
   );
 }
-
-export default AdminShield;
