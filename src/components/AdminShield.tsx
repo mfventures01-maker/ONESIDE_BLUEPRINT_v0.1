@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react';
+import { Shield, X, User, Key, Mail, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase/client';
 import { rpcClient } from '../lib/rpc/rpcClient';
-import { Shield, X, User, Key, Mail, Lock } from 'lucide-react';
 
 export default function AdminShield() {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,13 +73,17 @@ export default function AdminShield() {
           <div className="flex gap-2 mb-4 bg-white/5 rounded-lg p-1">
             <button
               onClick={() => setMode('email')}
-              className={lex-1 rounded-md py-1.5 text-xs font-semibold transition-colors }
+              className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                mode === 'email' ? 'bg-burnt-ochre text-white' : 'text-slate-400 hover:text-white'
+              }`}
             >
               Admin / CEO
             </button>
             <button
               onClick={() => setMode('pin')}
-              className={lex-1 rounded-md py-1.5 text-xs font-semibold transition-colors }
+              className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                mode === 'pin' ? 'bg-whatsapp-green text-white' : 'text-slate-400 hover:text-white'
+              }`}
             >
               Staff PIN
             </button>
@@ -134,7 +138,7 @@ export default function AdminShield() {
                   placeholder="Enter Staff PIN (4-6 digits)"
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full rounded-lg bg-white/5 border border-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-burnt-ochre focus:outline-none tracking-[0.5em]"
+                  className="w-full rounded-lg bg-white/5 border border-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-whatsapp-green focus:outline-none tracking-[0.5em]"
                   required
                 />
               </div>
