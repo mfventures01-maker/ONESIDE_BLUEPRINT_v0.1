@@ -47,7 +47,7 @@ function NavItem({ to, label, className = '' }) {
   return (
     <Link
       to={to}
-      className={lock px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-white/5 hover:text-white text-slate-400 }
+      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-white/5 hover:text-white text-slate-400 ${className}`}
     >
       {label}
     </Link>
