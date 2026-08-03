@@ -7,6 +7,7 @@ import OnboardingLayout from '../layouts/OnboardingLayout';
 import ErrorLayout from '../layouts/ErrorLayout';
 
 // Lazy-loaded pages
+const CustomerHomepage = lazy(() => import('../pages/CustomerHomepage'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const Orders = lazy(() => import('../pages/Orders'));
 const Inventory = lazy(() => import('../pages/Inventory'));
@@ -30,18 +31,18 @@ const Onboarding = lazy(() => import('../pages/Onboarding'));
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* ✅ FIXED: Public routes (Loads the actual Storefront) */}
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<div>Homepage (Public Gateway)</div>} />
+        <Route path="/" element={<CustomerHomepage />} />
       </Route>
 
-      {/* Authenticated routes (protected) */}
+      {/* Authenticated routes */}
       <Route element={<AuthenticatedLayout />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/notifications" element={<Notifications />} />
       </Route>
 
-      {/* Dashboard routes (protected by RoleGuard) */}
+      {/* Dashboard routes */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/orders" element={<Orders />} />
