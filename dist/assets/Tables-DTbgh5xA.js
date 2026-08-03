@@ -1,0 +1,1 @@
+import{j as e}from"./index-hUWsviX6.js";function t(){return e.jsxs("div",{className:"glass-panel p-6",children:[e.jsx("h1",{className:"text-2xl font-bold text-white mb-4",children:"Tables Territory"}),e.jsx("p",{className:"text-slate-400",children:"Certified page for Tables operations."})]})}export{t as default};

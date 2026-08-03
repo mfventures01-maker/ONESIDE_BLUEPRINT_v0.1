@@ -1,26 +1,14 @@
-﻿/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from "react";
-import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./state/auth/AuthProvider";
-import { ShellStateProvider } from "./state/Contexts";
-import { AppRoutes } from "./routes";
-import AdminShield from "./components/AdminShield";
-
+﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AppRoutes from './routes';
+import AdminShield from './components/AdminShield';
+import { ShellStateProvider } from './state/Contexts';
 export default function App() {
   return (
-    <AuthProvider>
+    <BrowserRouter>
       <ShellStateProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <AdminShield />
-        </BrowserRouter>
+        <Routes><Route path="*" element={<AppRoutes />} /></Routes>
+        <AdminShield />
       </ShellStateProvider>
-    </AuthProvider>
+    </BrowserRouter>
   );
 }
-
-
